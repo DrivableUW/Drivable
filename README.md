@@ -1,4 +1,6 @@
-# cs446
+# CS 446
+
+Group 15's CS 446 project.
 
 ## Team
 
