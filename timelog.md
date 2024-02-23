@@ -6,3 +6,5 @@
 | 2024/01/29 | 2   | 2      | 2     | 2       | 2     | 2     | Create+present proposal    |
 | 2024/02/12 |     | 1      | 1     | 1       | 1     | 1     | Team meeting for D2        |
 | 2024/02/15 | 1   | 1      | 1     | 1       | 1     | 1     | Prepare and submit D2      |
+| 2024/02/23 | 1   | 1      |       | 1       | 1     | 1     | Prototype Demo Meeting     |
+
