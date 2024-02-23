@@ -2,7 +2,7 @@
 |------------|-----|--------|-------|---------|-------|-------|----------------------------|
 | 2024/01/18 |     |        | 0.25  |         |       |       | Initialize repo            |
 | 2024/01/18 |     |        | 0.5   |         |       |       | Initialize android project |
-| 2024/01/27 | 1.5 |        | 1.5   |         | 1.5   | 1.5   | First proposal meeting     |
+| 2024/01/27 | 1.5 | 1.5    | 1.5   | 1.5     | 1.5   | 1.5   | First proposal meeting     |
 | 2024/01/29 | 2   | 2      | 2     | 2       | 2     | 2     | Create+present proposal    |
 | 2024/02/12 |     | 1      | 1     | 1       | 1     | 1     | Team meeting for D2        |
 | 2024/02/15 | 1   | 1      | 1     | 1       | 1     | 1     | Prepare and submit D2      |
