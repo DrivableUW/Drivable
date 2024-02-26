@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.cs446g15.app"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -32,6 +32,14 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+    kotlin.compilerOptions {
+        // we're here for a good time, not a long time
+        optIn.addAll(
+            "androidx.compose.material3.ExperimentalMaterial3Api",
+            "com.google.accompanist.permissions.ExperimentalPermissionsApi",
+            "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        )
     }
     buildFeatures {
         compose = true
@@ -56,6 +64,13 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
