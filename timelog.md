@@ -7,4 +7,4 @@
 | 2024/02/12 |     | 1      | 1     | 1       | 1     | 1     | Team meeting for D2        |
 | 2024/02/15 | 1   | 1      | 1     | 1       | 1     | 1     | Prepare and submit D2      |
 | 2024/02/23 | 1   | 1      |       | 1       | 1     | 1     | Prototype Demo Meeting     |
-
+| 2024/02/25 |     |        | 6     |         |       |       | App architecture, base UI  |
