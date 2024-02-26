@@ -35,7 +35,11 @@ android {
     }
     kotlin.compilerOptions {
         // we're here for a good time, not a long time
-        optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
+        optIn.addAll(
+            "androidx.compose.material3.ExperimentalMaterial3Api",
+            "com.google.accompanist.permissions.ExperimentalPermissionsApi",
+            "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        )
     }
     buildFeatures {
         compose = true
@@ -63,6 +67,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

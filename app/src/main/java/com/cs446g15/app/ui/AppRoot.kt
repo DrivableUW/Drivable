@@ -68,7 +68,10 @@ fun NavRoot() {
                 slideOutOfContainer(towards = SlideDirection.End)
             },
         ) {
-            DriveScreen { navController.popBackStack() }
+            DriveScreen { id ->
+                navController.popBackStack()
+                if (id != null) { navController.navigate("detail/$id") }
+            }
         }
 
         composable(
@@ -81,6 +84,11 @@ fun NavRoot() {
             },
         ) {
             HistoryScreen()
+        }
+
+        composable("detail/{driveId}") { backStackEntry ->
+            val driveId = backStackEntry.arguments?.getString("driveId")
+            DriveDetailScreen(driveId = driveId!!)
         }
     }
 }
