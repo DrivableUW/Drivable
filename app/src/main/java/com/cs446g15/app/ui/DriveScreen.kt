@@ -32,7 +32,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
 data class UiState(val start: Instant) {
     constructor() : this(Clock.System.now())
@@ -124,10 +125,11 @@ fun DriveBody(
     val timeValue by produceState("", uiState.start) {
         while (true) {
             val duration = Clock.System.now() - uiState.start
-            value = duration.toComponents { hours, minutes, seconds, _ ->
-                "%02d:%02d:%02d".format(hours, minutes, seconds)
+            duration.toComponents { hours, minutes, seconds, nanoseconds ->
+                value = "%02d:%02d:%02d".format(hours, minutes, seconds)
+                // sleep through the rest of the "current" second
+                delay(1.seconds - nanoseconds.nanoseconds)
             }
-            delay(500.milliseconds)
         }
     }
 
