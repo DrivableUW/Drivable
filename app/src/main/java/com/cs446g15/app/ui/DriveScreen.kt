@@ -226,6 +226,9 @@ class DriveViewModel(
     }
 
     fun endDrive() {
+        // don't allow ending multiple times
+        if (uiFlow.value.endTime != null) return
+
         val endTime = Clock.System.now()
         updateState { copy(endTime = endTime) }
         viewModelScope.launch {
