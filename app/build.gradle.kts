@@ -35,7 +35,7 @@ android {
     }
     kotlin.compilerOptions {
         // we're here for a good time, not a long time
-        freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+        optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
     }
     buildFeatures {
         compose = true
