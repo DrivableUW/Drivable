@@ -21,6 +21,10 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -149,7 +153,6 @@ fun DriveBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(timeValue, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
-
         ElevatedButton(
             modifier = Modifier.padding(top = 16.dp),
             onClick = { viewModel.endDrive() }
@@ -162,6 +165,19 @@ fun DriveBody(
             onClick = { viewModel.simulateViolation() }
         ) {
             Text("Simulate Violation")
+        }
+        uiState.violations.forEach { violation ->
+            if (Clock.System.now().epochSeconds - violation.time.epochSeconds <= 5) { // Assuming this is your condition function
+                Text(text = violation.description,
+                    style = TextStyle(
+                        color = Color.Red,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 30.sp
+                    ),
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+
+            }
         }
     }
 }
