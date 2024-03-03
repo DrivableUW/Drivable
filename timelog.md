@@ -9,3 +9,4 @@
 | 2024/02/23 | 1   | 1      |       | 1       | 1     | 1     | Prototype Demo Meeting     |
 | 2024/02/25 |     |        | 6     |         |       |       | App architecture, base UI  |
 | 2024/03/03 |     |        |       |         | 3     |       | History UI total time      |
+| 2024/03/03 |     |        |       | 4       |       |       | Adding Data Persistence    |
