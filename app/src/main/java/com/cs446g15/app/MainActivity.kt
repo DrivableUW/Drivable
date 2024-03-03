@@ -1,5 +1,6 @@
 package com.cs446g15.app
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,5 +12,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppRoot()
         }
+        MainActivity.appContext = applicationContext
+    }
+    companion object {
+        lateinit var appContext: Context
     }
 }

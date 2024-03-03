@@ -2,12 +2,14 @@ package com.cs446g15.app.data
 
 import LocationSerializer
 import android.location.Location
+import com.cs446g15.app.MainActivity
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import java.io.File
+import android.util.Log
 
 @Serializable
 data class Drive(
@@ -45,11 +47,13 @@ class DrivesRepository {
 
     private fun saveDrives() {
         val jsonEncoding = json.encodeToString(_drives)
-        File("driveHistory.json").writeText(jsonEncoding)
+        Log.d("DRIVE-REPOSITORY:Encoding", jsonEncoding)
+        File(MainActivity.appContext.filesDir,"driveHistory.json").writeText(jsonEncoding)
     }
 
     private fun loadDrives() {
-        val jsonEncoding = File("driveHistory.json").readText()
+        val jsonEncoding = File(MainActivity.appContext.filesDir,"driveHistory.json").readText()
+        Log.d("DRIVE-REPOSITORY:Encoding", jsonEncoding)
         val driveData = json.decodeFromString<List<Drive>>(jsonEncoding)
         _drives.clear()
         driveData.forEach { drive -> _drives[drive.id] = drive }
