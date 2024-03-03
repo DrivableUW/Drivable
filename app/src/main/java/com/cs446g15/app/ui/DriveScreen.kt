@@ -233,9 +233,16 @@ class DriveViewModel(
     }
 
     fun simulateViolation() {
+        val lengthModulo = uiFlow.value.violations.size % 3
+
+        val message = when (lengthModulo) {
+            0 -> "Speeding!"
+            1 -> "Red light!"
+            else -> "Stop Sign!"
+        }
         val violation = Violation(
             time = Clock.System.now(),
-            description = "Speeding!",
+            description = message,
             location = null
         )
         updateState { copy(violations = violations + violation) }
