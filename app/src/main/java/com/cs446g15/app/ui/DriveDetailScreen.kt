@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ElevatedButton
@@ -59,8 +61,7 @@ fun DriveDetailScreen(
                     }
                 )
             }
-        )
-        {
+        ) {
             Box(modifier = Modifier.padding(it)) {
                 DriveDetailBody(viewModel, onLeaveDetails = { exit("home") } )
             }
@@ -76,11 +77,12 @@ fun DriveDetailBody(
 
     Column(
         modifier = Modifier
+            .verticalScroll(rememberScrollState())
             .padding(top = 32.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val drive = viewModel.repository.drives[viewModel.id]
+        val drive = viewModel.drive
         Text(text = "Duration:",
             style = TextStyle(
                 color = Color.Blue,
@@ -141,6 +143,8 @@ class DriveDetailViewModel(
     val id: String,
     val repository: DrivesRepository = DrivesRepository.DEFAULT
 ): ViewModel() {
+    val drive = repository.drives[id]
+
     companion object {
         fun factory(id: String) = viewModelFactory {
             initializer {

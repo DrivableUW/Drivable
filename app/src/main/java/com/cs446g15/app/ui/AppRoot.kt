@@ -98,12 +98,9 @@ fun NavRoot() {
             )
         { backStackEntry ->
             val driveId = backStackEntry.arguments?.getString("driveId")
-            DriveDetailScreen(driveId = driveId!!) {
-                dest: String? ->
-                run {
-                    navController.popBackStack();
-                    if (dest == "home") navController.navigate("home")
-                }
+            DriveDetailScreen(driveId = driveId!!) { dest: String? ->
+                navController.popBackStack()
+                if (dest == "home") navController.navigate("home")
             }
         }
     }

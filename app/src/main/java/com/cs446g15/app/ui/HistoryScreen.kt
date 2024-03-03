@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
@@ -51,8 +53,7 @@ fun HistoryScreen(
                     }
                 )
             }
-        )
-        {
+        ) {
             Box(modifier = Modifier.padding(it)) {
                 HistoryScreenBody(viewModel, onViewDetails = {id: String -> toDrive(id)}, onExit = { exit() } )
             }
@@ -65,11 +66,10 @@ fun HistoryScreenBody(
     viewModel: HistoryScreenViewModel,
     onViewDetails: (String) -> Unit,
     onExit: () -> Unit
-
 ) {
-
     Column(
         modifier = Modifier
+            .verticalScroll(rememberScrollState())
             .padding(top = 32.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -102,7 +102,9 @@ fun HistoryScreenBody(
             )
             Column(
                 // IntrinsicSize allows the elements to have equal size
-                modifier = Modifier.width(IntrinsicSize.Max).padding(top = 10.dp),
+                modifier = Modifier
+                    .width(IntrinsicSize.Max)
+                    .padding(top = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
@@ -117,7 +119,9 @@ fun HistoryScreenBody(
 
         Column(
             // IntrinsicSize allows the elements to have equal size
-            modifier = Modifier.width(IntrinsicSize.Max).padding(top = 10.dp),
+            modifier = Modifier
+                .width(IntrinsicSize.Max)
+                .padding(top = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {

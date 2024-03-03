@@ -30,7 +30,9 @@ data class Violation(
 
 class DrivesRepository {
     private val _drives = mutableMapOf<String, Drive>()
-    private val json = Json { encodeDefaults = true}
+    private val json = Json { encodeDefaults = true }
+
+    init { loadDrives() }
 
     val drives: Map<String, Drive>
         get() = _drives
@@ -46,17 +48,21 @@ class DrivesRepository {
     }
 
     private fun saveDrives() {
-        val jsonEncoding = json.encodeToString(_drives)
-        Log.d("DRIVE-REPOSITORY:Encoding", jsonEncoding)
+        val jsonEncoding = json.encodeToString(_drives.values.toList())
+        Log.d("DRIVE-REPOSITORY:Serialization", jsonEncoding)
         File(MainActivity.appContext.filesDir,"driveHistory.json").writeText(jsonEncoding)
     }
 
     private fun loadDrives() {
-        val jsonEncoding = File(MainActivity.appContext.filesDir,"driveHistory.json").readText()
-        Log.d("DRIVE-REPOSITORY:Encoding", jsonEncoding)
-        val driveData = json.decodeFromString<List<Drive>>(jsonEncoding)
-        _drives.clear()
-        driveData.forEach { drive -> _drives[drive.id] = drive }
+        try {
+            val jsonEncoding = File(MainActivity.appContext.filesDir,"driveHistory.json").readText()
+            val driveData = json.decodeFromString<List<Drive>>(jsonEncoding)
+            _drives.clear()
+            driveData.forEach { drive -> _drives[drive.id] = drive }
+        } catch (e: Exception) {
+            Log.e("DRIVE-REPOSITORY:Serialization", "Failed to load drives: $e")
+            return
+        }
     }
 
     companion object {
