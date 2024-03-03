@@ -1,11 +1,16 @@
 package com.cs446g15.app.ui
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,14 +31,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.compose.rememberNavController
 import com.cs446g15.app.data.DrivesRepository
 import kotlin.time.Duration
 
 @Composable
 fun DriveDetailScreen(
     driveId: String,
-    viewModel: DriveDetailViewModel = viewModel(factory = DriveDetailViewModel.factory(driveId))
+    viewModel: DriveDetailViewModel = viewModel(factory = DriveDetailViewModel.factory(driveId)),
+    exit: (String?) -> Unit
 ) {
+
     Surface {
         Scaffold(
             topBar = {
@@ -43,13 +51,18 @@ fun DriveDetailScreen(
                     ),
                     title = {
                         Text("Drive Details")
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { exit("") }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 )
             }
         )
         {
             Box(modifier = Modifier.padding(it)) {
-                DriveDetailBody(viewModel)
+                DriveDetailBody(viewModel, onLeaveDetails = { exit("home") } )
             }
         }
     }
@@ -57,8 +70,10 @@ fun DriveDetailScreen(
 
 @Composable
 fun DriveDetailBody(
-    viewModel: DriveDetailViewModel
+    viewModel: DriveDetailViewModel,
+    onLeaveDetails: () -> Unit
 ) {
+
     Column(
         modifier = Modifier
             .padding(top = 32.dp)
@@ -105,6 +120,19 @@ fun DriveDetailBody(
                     fontSize = 20.sp
                 )
             )
+        }
+        Column(
+            // IntrinsicSize allows the elements to have equal size
+            modifier = Modifier.width(IntrinsicSize.Max).padding(top = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            ElevatedButton(
+                onClick = onLeaveDetails,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Back to Home")
+            }
         }
     }
 }

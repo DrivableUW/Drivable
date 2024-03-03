@@ -83,12 +83,28 @@ fun NavRoot() {
                 slideOutOfContainer(towards = SlideDirection.End)
             },
         ) {
-            HistoryScreen()
+            HistoryScreen(toDrive = {id ->
+            if (id != null) { navController.navigate("detail/$id") }}) {
+                navController.navigate("home")
+            }
         }
 
-        composable("detail/{driveId}") { backStackEntry ->
+        composable("detail/{driveId}",
+            enterTransition = {
+                slideIntoContainer(towards = SlideDirection.Start) },
+            exitTransition = {
+                slideOutOfContainer(towards = SlideDirection.End)
+            },
+            )
+        { backStackEntry ->
             val driveId = backStackEntry.arguments?.getString("driveId")
-            DriveDetailScreen(driveId = driveId!!)
+            DriveDetailScreen(driveId = driveId!!) {
+                dest: String? ->
+                run {
+                    navController.popBackStack();
+                    if (dest == "home") navController.navigate("home")
+                }
+            }
         }
     }
 }
