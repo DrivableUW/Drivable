@@ -3,6 +3,7 @@ package com.cs446g15.app.ui
 import android.Manifest.permission
 import android.content.Context
 import android.location.Location
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
@@ -21,10 +22,6 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,8 +31,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,10 +45,13 @@ import com.cs446g15.app.data.DrivesRepository
 import com.cs446g15.app.data.Violation
 import com.cs446g15.app.util.KtPriority
 import com.cs446g15.app.util.getCurrentLocation
+import com.cs446g15.app.util.getTextToSpeech
 import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -204,6 +208,8 @@ class DriveViewModel(
 
     private var locationProvider: FusedLocationProviderClient? = null
 
+    private var tts: TextToSpeech? = null
+
     private fun updateState(update: UiState.() -> UiState) {
         _uiFlow.value = _uiFlow.value.update()
     }
@@ -221,20 +227,35 @@ class DriveViewModel(
         this.locationProvider = locationProvider
 
         viewModelScope.launch {
-            try {
-                val location = locationProvider.getCurrentLocation {
-                    priority = KtPriority.HIGH_ACCURACY
-                }
-                updateState { copy(startLocation = location) }
-            } catch (e: SecurityException) {
-                Log.w("DriveViewModel", "location fetch failed: $e")
-            }
+            awaitAll(
+                async {
+                    try {
+                        tts = context.getTextToSpeech()
+                    } catch (e: Exception) {
+                        Log.w("DriveViewModel", "tts init failed: $e")
+                    }
+                },
+                async {
+                    try {
+                        val location = locationProvider.getCurrentLocation {
+                            priority = KtPriority.HIGH_ACCURACY
+                        }
+                        updateState { copy(startLocation = location) }
+                    } catch (e: SecurityException) {
+                        Log.w("DriveViewModel", "location fetch failed: $e")
+                    }
+                },
+            )
         }
+    }
+
+    private fun registerViolation(violation: Violation) {
+        tts?.speak(violation.description, TextToSpeech.QUEUE_FLUSH, null, null)
+        updateState { copy(violations = violations + violation) }
     }
 
     fun simulateViolation() {
         val lengthModulo = uiFlow.value.violations.size % 3
-
         val message = when (lengthModulo) {
             0 -> "Speeding!"
             1 -> "Red light!"
@@ -245,7 +266,7 @@ class DriveViewModel(
             description = message,
             location = null
         )
-        updateState { copy(violations = violations + violation) }
+        registerViolation(violation)
     }
 
     fun endDrive() {
