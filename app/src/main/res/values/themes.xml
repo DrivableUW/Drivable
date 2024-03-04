@@ -2,4 +2,6 @@
 <resources>
 
     <style name="Theme.CS446" parent="android:Theme.Material.Light.NoActionBar" />
+        <item name="colorPrimary">#EF5350</item>
+        <item name="colorPrimaryVariant">#EF5350</item>
 </resources>
