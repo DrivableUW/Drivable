@@ -2,6 +2,8 @@ package com.cs446g15.app.ui
 
 import android.Manifest.permission
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.location.Location
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -45,19 +47,28 @@ import com.cs446g15.app.data.DrivesRepository
 import com.cs446g15.app.data.Violation
 import com.cs446g15.app.util.KtPriority
 import com.cs446g15.app.util.getCurrentLocation
+import com.cs446g15.app.util.getEventFlow
 import com.cs446g15.app.util.getTextToSpeech
 import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -227,6 +238,7 @@ class DriveViewModel(
             awaitAll(
                 async { setupTts(context) },
                 async { setupLocation(context) },
+                async { setupAccelerometer(context) },
             )
         }
     }
@@ -245,17 +257,76 @@ class DriveViewModel(
         try {
             val locationProvider = LocationServices.getFusedLocationProviderClient(context)
             this.locationProvider = locationProvider
-            val location = locationProvider.getCurrentLocation {
-                priority = KtPriority.HIGH_ACCURACY
-            }
+            val location = getLocation()
             updateState { copy(startLocation = location) }
         } catch (e: SecurityException) {
             Log.w("DriveViewModel", "location fetch failed: $e")
         }
     }
 
-    private fun registerViolation(violation: Violation) {
-        tts?.speak(violation.description, TextToSpeech.QUEUE_FLUSH, null, null)
+    @OptIn(FlowPreview::class)
+    private suspend fun setupAccelerometer(context: Context) {
+        val threshold = 3 // G force threshold
+        val debounceTime = 1000.milliseconds
+
+        val sensorManager = context.getSystemService(SensorManager::class.java) ?: return
+        sensorManager.getEventFlow(Sensor.TYPE_ACCELEROMETER)
+            // low-pass filter to discount gravity
+            .scan(Pair(listOf(0f, 0f, 0f), listOf(0f, 0f, 0f))) { (prevGravity, prevAccel), event ->
+                // adapted for Kotlin Flows (reactive), based on
+                // https://developer.android.com/guide/topics/sensors/sensors_motion#sensors-motion-accel
+                val alpha = 0.8f
+
+                val gravity = prevGravity.toMutableList()
+                val accel = prevAccel.toMutableList()
+
+                gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0]
+                gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1]
+                gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2]
+
+                accel[0] = event.values[0] - gravity[0]
+                accel[1] = event.values[1] - gravity[1]
+                accel[2] = event.values[2] - gravity[2]
+
+                Pair(gravity, accel)
+            }
+            // accel
+            .map { it.second }
+            // accel magnitude
+            .map { it[0] * it[0] + it[1] * it[1] + it[2] * it[2] }
+            // iff over threshold
+            .map { it > (threshold * threshold) }
+            // remove duplicate events (only trigger on leading/trailing edge)
+            .distinctUntilChanged()
+            // remove false (only trigger on leading edge)
+            .filter { it }
+            // we only have true now so map to Unit
+            .map {}
+            // debounce to remove noise
+            .debounce(debounceTime)
+            // we'll always receive an event on startup, discard it
+            .drop(1)
+            // register as a violation
+            .collect { registerViolation("Reckless maneuvering!") }
+    }
+
+    private suspend fun getLocation(): Location? {
+        return try {
+            locationProvider?.getCurrentLocation {
+                priority = KtPriority.HIGH_ACCURACY
+            }
+        } catch (e: SecurityException) {
+            null
+        }
+    }
+
+    private suspend fun registerViolation(message: String) {
+        tts?.speak(message, TextToSpeech.QUEUE_FLUSH, null, null)
+        val violation = Violation(
+            time = Clock.System.now(),
+            description = message,
+            location = getLocation()
+        )
         updateState { copy(violations = violations + violation) }
     }
 
@@ -266,12 +337,7 @@ class DriveViewModel(
             1 -> "Red light!"
             else -> "Stop Sign!"
         }
-        val violation = Violation(
-            time = Clock.System.now(),
-            description = message,
-            location = null
-        )
-        registerViolation(violation)
+        viewModelScope.launch { registerViolation(message) }
     }
 
     fun endDrive() {
@@ -281,17 +347,12 @@ class DriveViewModel(
         val endTime = Clock.System.now()
         updateState { copy(endTime = endTime) }
         viewModelScope.launch {
-            val endLocation = try {
-                locationProvider?.getCurrentLocation {
-                    priority = KtPriority.HIGH_ACCURACY
-                }
-            } catch (e: SecurityException) { null }
             val uiState = uiFlow.value
             val drive = Drive(
                 startTime = uiState.startTime,
                 startLocation = uiState.startLocation,
                 endTime = endTime,
-                endLocation = endLocation,
+                endLocation = getLocation(),
                 violations = uiState.violations
             )
             repository.addDrive(drive)
