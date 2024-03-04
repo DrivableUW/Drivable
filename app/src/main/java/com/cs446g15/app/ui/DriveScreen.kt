@@ -223,29 +223,34 @@ class DriveViewModel(
             return
         }
 
-        val locationProvider = LocationServices.getFusedLocationProviderClient(context)
-        this.locationProvider = locationProvider
-
         viewModelScope.launch {
             awaitAll(
-                async {
-                    try {
-                        tts = context.getTextToSpeech()
-                    } catch (e: Exception) {
-                        Log.w("DriveViewModel", "tts init failed: $e")
-                    }
-                },
-                async {
-                    try {
-                        val location = locationProvider.getCurrentLocation {
-                            priority = KtPriority.HIGH_ACCURACY
-                        }
-                        updateState { copy(startLocation = location) }
-                    } catch (e: SecurityException) {
-                        Log.w("DriveViewModel", "location fetch failed: $e")
-                    }
-                },
+                async { setupTts(context) },
+                async { setupLocation(context) },
             )
+        }
+    }
+
+    private suspend fun setupTts(context: Context) {
+        try {
+            val tts = context.getTextToSpeech()
+            addCloseable { tts.shutdown() }
+            this.tts = tts
+        } catch (e: Exception) {
+            Log.w("DriveViewModel", "tts init failed: $e")
+        }
+    }
+
+    private suspend fun setupLocation(context: Context) {
+        try {
+            val locationProvider = LocationServices.getFusedLocationProviderClient(context)
+            this.locationProvider = locationProvider
+            val location = locationProvider.getCurrentLocation {
+                priority = KtPriority.HIGH_ACCURACY
+            }
+            updateState { copy(startLocation = location) }
+        } catch (e: SecurityException) {
+            Log.w("DriveViewModel", "location fetch failed: $e")
         }
     }
 
