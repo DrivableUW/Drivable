@@ -47,6 +47,11 @@ class DrivesRepository {
         saveDrives()
     }
 
+    fun removeAllDrives() {
+        _drives.clear()
+        saveDrives()
+    }
+
     private fun saveDrives() {
         val jsonEncoding = json.encodeToString(_drives.values.toList())
         Log.d("DRIVE-REPOSITORY:Serialization", jsonEncoding)

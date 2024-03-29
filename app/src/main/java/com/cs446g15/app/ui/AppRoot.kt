@@ -56,7 +56,8 @@ fun NavRoot() {
             HomeScreen(
                 onStartDrive = { navController.navigate("drive") },
                 onViewHistory = { navController.navigate("history") },
-                onSafetyTips = { navController.navigate("safety_tips") }
+                onSafetyTips = { navController.navigate("safety_tips") },
+                onSettings = { navController.navigate("settings") }
             )
         }
 
@@ -104,6 +105,20 @@ fun NavRoot() {
             }
         }
 
+        composable(
+            "settings",
+            enterTransition = {
+                slideIntoContainer(towards = SlideDirection.Start)
+            },
+            exitTransition = {
+                slideOutOfContainer(towards = SlideDirection.End)
+            },
+        ) {
+            SettingsScreen() {
+                navController.navigate("home")
+            }
+        }
+
         composable("detail/{driveId}",
             enterTransition = {
                 slideIntoContainer(towards = SlideDirection.Start) },
@@ -125,7 +140,8 @@ fun NavRoot() {
 fun HomeScreen(
     onStartDrive: () -> Unit,
     onViewHistory: () -> Unit,
-    onSafetyTips: () -> Unit
+    onSafetyTips: () -> Unit,
+    onSettings: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -176,6 +192,13 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Safety Tips")
+                }
+
+                ElevatedButton(
+                    onClick = onSettings,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Settings")
                 }
             }
         }
