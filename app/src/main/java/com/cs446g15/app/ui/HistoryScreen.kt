@@ -29,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cs446g15.app.data.DrivesRepository
+import com.cs446g15.app.util.exportDrivesWithAggregation
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -50,6 +51,14 @@ fun HistoryScreen(
                     ),
                     title = {
                         Text("Past Rides")
+                    },
+                    actions = {
+                        ElevatedButton(
+                            onClick = { exportDrivesWithAggregation(viewModel.repository.drives.values.toList())},
+                            modifier = Modifier.padding(horizontal = 12.dp)
+                        ) {
+                            Text("Export Data")
+                        }
                     }
                 )
             }
