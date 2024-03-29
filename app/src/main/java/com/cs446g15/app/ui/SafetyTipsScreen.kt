@@ -117,7 +117,7 @@ fun SafetyTipsBody(
             )
 
             Spacer(modifier = Modifier.height(10.dp))
-            Text(text = "You have committed this infraction $worstViolationCount times",
+            Text(text = "You have committed this infraction $worstViolationCount times.",
                 style = TextStyle(
                     color = Color.Red,
                     fontSize = 18.sp

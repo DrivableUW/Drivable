@@ -94,7 +94,7 @@ fun HistoryScreenBody(
                     fontSize = 14.sp
                 )
             )
-            Text(text = startTime.hour.toString() + ":" + startTime.minute.toString() + " to " + endTime.hour.toString() + ":" + endTime.minute.toString(),
+            Text(text = startTime.hour.toString().padStart(2, '0') + ":" + startTime.minute.toString().padStart(2, '0') + " to " + endTime.hour.toString().padStart(2, '0') + ":" + endTime.minute.toString().padStart(2, '0'),
                 style = TextStyle(
                     color = Color.Black,
                     fontSize = 14.sp
