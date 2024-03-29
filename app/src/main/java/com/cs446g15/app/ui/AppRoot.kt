@@ -99,8 +99,7 @@ fun NavRoot() {
                 slideOutOfContainer(towards = SlideDirection.End)
             },
         ) {
-            SafetyTipsScreen(toDrive = {id ->
-                if (id != null) { navController.navigate("detail/$id") }}) {
+            SafetyTipsScreen() {
                 navController.navigate("home")
             }
         }
