@@ -335,12 +335,11 @@ class DriveViewModel(
 
              try {
                  audioRecord.startRecording()
-                 while (true) {
+                 while (uiFlow.value.endTime == null) {
                      val currentTime = System.currentTimeMillis()
                      val readSize = audioRecord.read(audioData, 0, bufferSizeInBytes)
                      if (readSize > 0) {
                          val loudness = calculateLoudness(audioData)
-                         Log.i("MyTag", "Loudness: $loudness")
                          if (loudness > audioThreshold) {
                              if (thresholdStartTime == 0L) {
                                  thresholdStartTime = currentTime
