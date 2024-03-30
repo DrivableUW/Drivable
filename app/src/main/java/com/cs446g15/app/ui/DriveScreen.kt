@@ -22,13 +22,24 @@ import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,6 +63,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -127,22 +140,56 @@ fun DriveScreen(
         AlertDialog(
             onDismissRequest = viewModel::alertDismissed,
             confirmButton = {
-                Button(onClick = viewModel::alertConfirmed) {
+                Button(
+                    onClick = viewModel::alertConfirmed,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                        contentColor = Color.Black // Text color
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                    )
                     Text("Discard")
                 }
             },
             dismissButton = {
-                Button(onClick = viewModel::alertDismissed) {
+                Button(
+                    onClick = viewModel::alertDismissed,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                        contentColor = Color.Black // Text color
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = "Continue",
+                    )
                     Text("Continue")
                 }
             },
-            title = { Text("Discard Drive?") },
+            title = {
+                Text(
+                    text = "Discard Drive?",
+                    style = TextStyle(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    ),
+                )
+            },
             text = {
                 Text(
-                    """
+                    text = """
                     You will lose all data from this drive. To save, ${""
                     } use the End Drive button instead.
-                    """.trimIndent()
+                    """.trimIndent(),
+                    style = TextStyle(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    ),
                 )
             }
         )
@@ -150,13 +197,22 @@ fun DriveScreen(
 
     Surface {
         Scaffold(
+            containerColor = Color(red = 255, green = 230, blue = 208),
             topBar = {
                 MediumTopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                        containerColor = Color(red = 68, green = 188, blue = 216)
                     ),
                     title = {
-                        Text("Your Drive")
+                        Text(
+                            text = "Your Drive",
+                            style = TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 32.sp
+                            )
+                        )
                     },
                     navigationIcon = {
                         IconButton(onClick = viewModel::backRequested) {
@@ -199,18 +255,65 @@ fun DriveBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(timeValue, fontSize = MaterialTheme.typography.headlineMedium.fontSize)
+        Spacer(modifier = Modifier.height(40.dp))
         ElevatedButton(
-            modifier = Modifier.padding(top = 16.dp),
-            onClick = { viewModel.endDrive() }
+            onClick = { viewModel.endDrive() },
+            modifier = Modifier
+                .padding(vertical = 8.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                contentColor = Color.Black // Text color
+            )
         ) {
-            Text("End Drive")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            )
+            {
+                Icon(
+                    Icons.Default.ExitToApp,
+                    contentDescription = "Exit",
+                )
+                Text(
+                    text = "End Drive",
+                    style = TextStyle(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    ),
+                )
+            }
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
+
         ElevatedButton(
-            modifier = Modifier.padding(top = 16.dp),
-            onClick = { viewModel.simulateViolation() }
+            onClick = { viewModel.simulateViolation() },
+            modifier = Modifier
+                .padding(vertical = 8.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                contentColor = Color.Black // Text color
+            )
         ) {
-            Text("Simulate Violation")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            )
+            {
+                Icon(
+                    Icons.Default.Create,
+                    contentDescription = "Create",
+                )
+                Text(
+                    text = "Simulate Violation",
+                    style = TextStyle(
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    ),
+                )
+            }
         }
         uiState.violations.forEach { violation ->
             if (Clock.System.now().epochSeconds - violation.time.epochSeconds <= 5) { // Assuming this is your condition function

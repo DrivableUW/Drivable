@@ -19,13 +19,27 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -144,18 +158,31 @@ fun HomeScreen(
     onSettings: () -> Unit
 ) {
     Scaffold(
+        containerColor = Color(red = 255, green = 230, blue = 208),
         topBar = {
-            TopAppBar(
+            MediumTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = Color(red = 68, green = 188, blue = 216)
                 ),
                 title = {
-                    Text("Drivable")
+                    Text(
+                        text = "Drivable",
+                        style = TextStyle(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            fontSize = 32.sp
+                        )
+                    )
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onStartDrive) {
+            FloatingActionButton(
+                onClick = onStartDrive,
+                containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                contentColor = Color.Black // Text color
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
         }
@@ -175,30 +202,130 @@ fun HomeScreen(
             ) {
                 ElevatedButton(
                     onClick = onStartDrive,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                        contentColor = Color.Black // Text color
+                    )
                 ) {
-                    Text("Start Drive")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    {
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = "Start",
+                        )
+                        Text(
+                            text = "Start Drive",
+                            style = TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 ElevatedButton(
                     onClick = onViewHistory,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                        contentColor = Color.Black // Text color
+                    )
                 ) {
-                    Text("View History")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    {
+                        Icon(
+                            Icons.Default.List,
+                            contentDescription = "List",
+                        )
+                        Text(
+                            text = "View History",
+                            style = TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 ElevatedButton(
                     onClick = onSafetyTips,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                        contentColor = Color.Black // Text color
+                    )
                 ) {
-                    Text("Safety Tips")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = "Safety",
+                        )
+                        Text(
+                            text = "Safety Tips",
+                            style = TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 ElevatedButton(
                     onClick = onSettings,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                        contentColor = Color.Black // Text color
+                    )
                 ) {
-                    Text("Settings")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Settings",
+                        )
+                        Text(
+                            text = "Settings",
+                            style = TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
