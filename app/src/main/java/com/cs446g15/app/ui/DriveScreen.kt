@@ -1,7 +1,11 @@
 package com.cs446g15.app.ui
 
 import android.Manifest.permission
+import android.annotation.SuppressLint
 import android.content.Context
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.location.Location
@@ -85,12 +89,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.math.log10
+import kotlin.math.sqrt
 
 @Composable
 fun DriveScreen(
@@ -107,6 +115,7 @@ fun DriveScreen(
     val permissions = rememberMultiplePermissionsState(listOf(
         permission.ACCESS_FINE_LOCATION,
         permission.ACCESS_COARSE_LOCATION,
+        permission.RECORD_AUDIO,
         permission.CAMERA,
     ))
 
@@ -293,6 +302,7 @@ class DriveViewModel(
                 async { setupTts(context) },
                 async { setupLocation(context) },
                 async { setupAccelerometer(context) },
+                async { setupAudioDetection() },
                 async { setupCamera(context, lifecycleOwner) },
             )
         }
@@ -445,6 +455,64 @@ class DriveViewModel(
                     registerViolation("Distracted driving!")
                 }
             }
+    }
+
+     @OptIn(FlowPreview::class)
+     @SuppressLint("MissingPermission")
+     private suspend fun setupAudioDetection() {
+         val sampleRate = 44100
+         val audioSource = MediaRecorder.AudioSource.MIC
+         val channelConfig = AudioFormat.CHANNEL_IN_MONO
+         val audioFormat = AudioFormat.ENCODING_PCM_16BIT
+         val bufferSizeInBytes = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
+
+         val audioThreshold = 70.0
+         val debounceThreshold = 1.seconds
+
+         val events = MutableSharedFlow<Double>(
+             extraBufferCapacity = 10,
+             onBufferOverflow = BufferOverflow.DROP_OLDEST
+         )
+
+         CoroutineScope(Dispatchers.Default).launch {
+             val audioRecord = AudioRecord(audioSource, sampleRate, channelConfig, audioFormat, bufferSizeInBytes)
+             val audioData = ShortArray(bufferSizeInBytes)
+
+             try {
+                 audioRecord.startRecording()
+                 while (uiFlow.value.endTime == null) {
+                     val readSize = audioRecord.read(audioData, 0, bufferSizeInBytes)
+                     if (readSize > 0) {
+                         val loudness = calculateLoudness(audioData)
+                         events.tryEmit(loudness)
+                     }
+                 }
+             } finally {
+                 audioRecord.stop()
+                 audioRecord.release()
+             }
+         }
+
+         events
+             .map { it > audioThreshold }
+             .distinctUntilChanged()
+             .filter { it }
+             .map {}
+             .debounce(debounceThreshold)
+             .collect {
+                 viewModelScope.launch {
+                     registerViolation("Excessive Noise!")
+                 }
+             }
+     }
+
+    private fun calculateLoudness(audioData: ShortArray): Double {
+        var sum = 0.0
+        for (sample in audioData) {
+            sum += sample * sample
+        }
+        val rms = sqrt(sum / audioData.size)
+        return 20 * log10(rms)
     }
 
     private suspend fun getLocation(): Location? {
