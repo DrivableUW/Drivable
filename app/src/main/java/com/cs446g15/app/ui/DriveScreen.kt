@@ -407,6 +407,7 @@ class DriveViewModel(
                 async { setupAccelerometer(context) },
                 async { setupAudioDetection() },
                 async { setupCamera(context, lifecycleOwner) },
+                async { setupSpeedDetection() },
             )
         }
     }
@@ -608,6 +609,21 @@ class DriveViewModel(
                  }
              }
      }
+
+    private suspend fun setupSpeedDetection() {
+        while (uiFlow.value.endTime == null) {
+            val location = getLocation()
+            // Get the user's speed
+            val speed = location?.speed ?: 0.0 // Speed in meters/second
+            val speedInKmh = speed * 3.6 // Convert to km/h
+            // Check if the user is speeding
+            if (speedInKmh > 60.0) {
+                viewModelScope.launch {
+                    registerViolation("Excessive Noise!")
+                }
+            }
+        }
+    }
 
     private fun calculateLoudness(audioData: ShortArray): Double {
         var sum = 0.0
