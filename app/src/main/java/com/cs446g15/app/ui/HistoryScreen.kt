@@ -136,9 +136,12 @@ fun HistoryScreenBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val allDrives = viewModel.repository.drives
-        var i = 0
-        for ((id, drive) in allDrives) {
-            i += 1
+            .values
+            .sortedBy { it.startTime }
+            .withIndex()
+            .reversed()
+        for ((i, drive) in allDrives) {
+            val id = drive.id
             ElevatedCard(
                 modifier = Modifier
                     .padding(vertical = 8.dp),
