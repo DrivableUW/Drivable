@@ -151,94 +151,112 @@ fun DriveDetailBody(
             }
         }
 
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(top = 32.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = "Duration:",
+        DriveDetailInner(viewModel, onLeaveDetails)
+    }
+}
+
+@Composable
+fun DriveDetailInner(
+    viewModel: DriveDetailViewModel,
+    onLeaveDetails: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding(top = 32.dp)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val drive = viewModel.drive
+
+        Text(
+            text = "Duration:",
+            style = TextStyle(
+                color = Color(red = 68, green = 188, blue = 216),
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            )
+        )
+        val duration: Duration
+        if (drive != null) {
+            duration = drive.endTime - drive.startTime
+            val hours = duration.inWholeHours
+            val minutes = (duration.inWholeMinutes % 60)
+            val seconds = (duration.inWholeSeconds % 60)
+
+            val time = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+            Text(
+                text = time,
                 style = TextStyle(
                     color = Color(red = 68, green = 188, blue = 216),
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
                 )
             )
-            val duration: Duration
-            if (drive != null) {
-                duration = drive.endTime - drive.startTime
-                val hours = duration.inWholeHours
-                val minutes = (duration.inWholeMinutes % 60)
-                val seconds = (duration.inWholeSeconds % 60)
+        }
+        Spacer(modifier = Modifier.height(25.dp))
 
-                val time = String.format("%02d:%02d:%02d", hours, minutes, seconds)
-                Text(text = time,
-                    style = TextStyle(
-                        color = Color(red = 68, green = 188, blue = 216),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
-                    )
-                )
-            }
-            Spacer(modifier = Modifier.height(25.dp))
-
-            Text(text = "Violations:",
+        Text(
+            text = "Violations:",
+            style = TextStyle(
+                color = Color.Red,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            ),
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        drive?.violations?.forEach { violation ->
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = violation.description,
                 style = TextStyle(
                     color = Color.Red,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
-                ),
-                modifier = Modifier.padding(top = 16.dp)
-            )
-            drive?.violations?.forEach{ violation ->
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(text = violation.description,
-                    style = TextStyle(
-                        color = Color.Red,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
-                    )
                 )
-            }
-            Column(
-                // IntrinsicSize allows the elements to have equal size
+            )
+        }
+        Column(
+            // IntrinsicSize allows the elements to have equal size
+            modifier = Modifier
+                .width(IntrinsicSize.Max)
+                .padding(top = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            ElevatedButton(
+                onClick = onLeaveDetails,
                 modifier = Modifier
-                    .width(IntrinsicSize.Max)
-                    .padding(top = 10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(
+                        red = 68,
+                        green = 188,
+                        blue = 216
+                    ), // Background color of the button
+                    contentColor = Color.Black // Text color
+                )
             ) {
-                ElevatedButton(
-                    onClick = onLeaveDetails,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
-                        contentColor = Color.Black // Text color
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                {
+                    Icon(
+                        Icons.Default.Home,
+                        contentDescription = "Home",
                     )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                    Text(
+                        text = "Back to Home",
+                        style = TextStyle(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.weight(1f)
                     )
-                    {
-                        Icon(
-                            Icons.Default.Home,
-                            contentDescription = "Home",
-                        )
-                        Text(
-                            text = "Back to Home",
-                            style = TextStyle(
-                                fontFamily = FontFamily.SansSerif,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
                 }
             }
         }
