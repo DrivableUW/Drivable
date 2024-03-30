@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("com.android.application") version "8.3.1"
+    id("org.jetbrains.kotlin.android") version "1.9.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.20"
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
 }
 
 android {
