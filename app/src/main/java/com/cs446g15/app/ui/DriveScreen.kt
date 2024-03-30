@@ -7,13 +7,22 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.LinearLayout
 import androidx.activity.compose.BackHandler
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis.COORDINATE_SYSTEM_ORIGINAL
+import androidx.camera.mlkit.vision.MlKitAnalyzer
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
@@ -33,12 +42,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -53,10 +67,14 @@ import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetectorOptions
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
@@ -64,10 +82,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
@@ -79,6 +99,7 @@ fun DriveScreen(
 ) {
     val uiState by viewModel.uiFlow.collectAsState()
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     BackHandler { viewModel.backRequested() }
     SideEffect { viewModel.exit = exit }
@@ -86,10 +107,11 @@ fun DriveScreen(
     val permissions = rememberMultiplePermissionsState(listOf(
         permission.ACCESS_FINE_LOCATION,
         permission.ACCESS_COARSE_LOCATION,
+        permission.CAMERA,
     ))
 
     LaunchedEffect(permissions) {
-        viewModel.handlePermissions(permissions, context)
+        viewModel.handlePermissions(permissions, context, lifecycleOwner)
     }
 
     if (uiState.showConfirmation) {
@@ -129,7 +151,7 @@ fun DriveScreen(
                     },
                     navigationIcon = {
                         IconButton(onClick = viewModel::backRequested) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
                     }
                 )
@@ -191,10 +213,37 @@ fun DriveBody(
                     ),
                     modifier = Modifier.padding(top = 16.dp)
                 )
-
             }
         }
+
+        CameraPreview(
+            viewModel.cameraController,
+            // Android requires that the camera be visible to receive frames.
+            // Ah well, we'll cheese it with a 1x1dp 0% opacity view.
+            modifier = Modifier
+                .size(1.dp, 1.dp)
+                .alpha(0f)
+        )
     }
+}
+
+@Composable
+fun CameraPreview(
+    cameraController: CameraController?,
+    modifier: Modifier = Modifier
+) {
+    AndroidView(
+        factory = { context ->
+            PreviewView(context).apply {
+                // https://stackoverflow.com/a/68293531
+                controller = cameraController
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            }
+        },
+        update = { it.controller = cameraController },
+        modifier = modifier
+    )
 }
 
 data class UiState(
@@ -204,6 +253,8 @@ data class UiState(
     val shouldExit: Boolean = false,
     val violations: List<Violation> = emptyList(),
     val showConfirmation: Boolean = false,
+    // used to update the AndroidView when cameraController is ready
+    val cameraControllerReady: Boolean = false,
 )
 
 class DriveViewModel(
@@ -218,6 +269,8 @@ class DriveViewModel(
         get() = _uiFlow
 
     private var locationProvider: FusedLocationProviderClient? = null
+    var cameraController: LifecycleCameraController? = null
+        private set
 
     private var tts: TextToSpeech? = null
 
@@ -227,7 +280,8 @@ class DriveViewModel(
 
     fun handlePermissions(
         permissions: MultiplePermissionsState,
-        context: Context
+        context: Context,
+        lifecycleOwner: LifecycleOwner
     ) {
         if (!permissions.allPermissionsGranted) {
             permissions.launchMultiplePermissionRequest()
@@ -239,6 +293,7 @@ class DriveViewModel(
                 async { setupTts(context) },
                 async { setupLocation(context) },
                 async { setupAccelerometer(context) },
+                async { setupCamera(context, lifecycleOwner) },
             )
         }
     }
@@ -307,7 +362,89 @@ class DriveViewModel(
             // we'll always receive an event on startup, discard it
             .drop(1)
             // register as a violation
-            .collect { registerViolation("Reckless maneuvering!") }
+            .collect {
+                // launch a new coroutine to avoid blocking the flow
+                viewModelScope.launch {
+                    registerViolation("Reckless maneuvering!")
+                }
+            }
+    }
+
+    @OptIn(FlowPreview::class)
+    private suspend fun setupCamera(context: Context, lifecycleOwner: LifecycleOwner) {
+        // the eyeOpenProbability at which we consider the eye "closed"
+        val eyeThreshold = 0.5
+        // the amount of time for which the eye(s) must be closed to trigger a violation
+        val durationThreshold = 50.milliseconds
+        // debounce threshold
+        val debounceTime = 1000.milliseconds
+
+        val events = MutableSharedFlow<MlKitAnalyzer.Result>(
+            extraBufferCapacity = 10,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        )
+
+        val detector = FaceDetection.getClient(
+            FaceDetectorOptions.Builder()
+                .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+                .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+                .build()
+        )
+        val cameraController = LifecycleCameraController(context)
+        cameraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+        cameraController.setImageAnalysisAnalyzer(
+            ContextCompat.getMainExecutor(context),
+            MlKitAnalyzer(
+                listOf(detector),
+                COORDINATE_SYSTEM_ORIGINAL,
+                ContextCompat.getMainExecutor(context)
+            ) {
+                events.tryEmit(it)
+            }
+        )
+        cameraController.bindToLifecycle(lifecycleOwner)
+        this.cameraController = cameraController
+        updateState { copy(cameraControllerReady = true) }
+
+        events
+            // extract the first face if present
+            .mapNotNull {
+                it.getValue(detector)?.firstOrNull()
+            }
+            // map to true iff an eye is closed
+            .map {
+                val rightOpen = it.rightEyeOpenProbability ?: 0f
+                val leftOpen = it.leftEyeOpenProbability ?: 0f
+                rightOpen < eyeThreshold || leftOpen < eyeThreshold
+            }
+            // convert to the current timestamp
+            .map {
+                if (it) Clock.System.now() else null
+            }
+            // obtain the duration for which the eye(s) have been closed
+            .scan(null as Pair<Instant, Duration>?) { prev, now ->
+                now?.let { it to (it - (prev?.first ?: it)) }
+            }
+            // map to just the duration
+            .map { it?.second ?: 0.milliseconds }
+            // map to true iff the duration is over the threshold.
+            // at this point, the stream emits a sequence of `true`
+            // iff the user is currently distracted.
+            .map { it > durationThreshold }
+            // as with setupAccelerometer, we only want to trigger
+            // on the leading edge.
+            .distinctUntilChanged()
+            .filter { it }
+            .map {}
+            .debounce(debounceTime)
+            // if we get here, it corresponds to a "user has gotten distracted"
+            // event. register a violation.
+            .collect {
+                viewModelScope.launch {
+                    registerViolation("Distracted driving!")
+                }
+            }
     }
 
     private suspend fun getLocation(): Location? {
