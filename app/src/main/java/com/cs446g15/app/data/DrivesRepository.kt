@@ -1,6 +1,6 @@
 package com.cs446g15.app.data
 
-import LocationSerializer
+import com.cs446g15.app.util.LocationSerializer
 import android.location.Location
 import com.cs446g15.app.MainActivity
 import kotlinx.datetime.Instant
@@ -44,6 +44,11 @@ class DrivesRepository {
 
     fun removeDrive(id: String) {
         _drives.remove(id)
+        saveDrives()
+    }
+
+    fun removeAllDrives() {
+        _drives.clear()
         saveDrives()
     }
 

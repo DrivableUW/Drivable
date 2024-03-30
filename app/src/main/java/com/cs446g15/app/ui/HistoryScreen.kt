@@ -29,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cs446g15.app.data.DrivesRepository
+import com.cs446g15.app.util.exportDrivesWithAggregation
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -50,6 +51,14 @@ fun HistoryScreen(
                     ),
                     title = {
                         Text("Past Rides")
+                    },
+                    actions = {
+                        ElevatedButton(
+                            onClick = { exportDrivesWithAggregation(viewModel.repository.drives.values.toList())},
+                            modifier = Modifier.padding(horizontal = 12.dp)
+                        ) {
+                            Text("Export Data")
+                        }
                     }
                 )
             }
@@ -94,7 +103,7 @@ fun HistoryScreenBody(
                     fontSize = 14.sp
                 )
             )
-            Text(text = startTime.hour.toString() + ":" + startTime.minute.toString() + " to " + endTime.hour.toString() + ":" + endTime.minute.toString(),
+            Text(text = startTime.hour.toString().padStart(2, '0') + ":" + startTime.minute.toString().padStart(2, '0') + " to " + endTime.hour.toString().padStart(2, '0') + ":" + endTime.minute.toString().padStart(2, '0'),
                 style = TextStyle(
                     color = Color.Black,
                     fontSize = 14.sp
