@@ -302,7 +302,7 @@ class DriveViewModel(
                 async { setupTts(context) },
                 async { setupLocation(context) },
                 async { setupAccelerometer(context) },
-                async { setupAudioDetection(context) },
+                async { setupAudioDetection() },
                 async { setupCamera(context, lifecycleOwner) },
             )
         }
@@ -456,8 +456,10 @@ class DriveViewModel(
                 }
             }
     }
+
+     @OptIn(FlowPreview::class)
      @SuppressLint("MissingPermission")
-     private suspend fun setupAudioDetection(context: Context) {
+     private suspend fun setupAudioDetection() {
          val sampleRate = 44100
          val audioSource = MediaRecorder.AudioSource.MIC
          val channelConfig = AudioFormat.CHANNEL_IN_MONO
@@ -465,8 +467,12 @@ class DriveViewModel(
          val bufferSizeInBytes = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
 
          val audioThreshold = 70.0
-         var lastViolationTime = 0L
-         var thresholdStartTime = 0L
+         val debounceThreshold = 1.seconds
+
+         val events = MutableSharedFlow<Double>(
+             extraBufferCapacity = 10,
+             onBufferOverflow = BufferOverflow.DROP_OLDEST
+         )
 
          CoroutineScope(Dispatchers.Default).launch {
              val audioRecord = AudioRecord(audioSource, sampleRate, channelConfig, audioFormat, bufferSizeInBytes)
@@ -475,23 +481,10 @@ class DriveViewModel(
              try {
                  audioRecord.startRecording()
                  while (uiFlow.value.endTime == null) {
-                     val currentTime = System.currentTimeMillis()
                      val readSize = audioRecord.read(audioData, 0, bufferSizeInBytes)
                      if (readSize > 0) {
                          val loudness = calculateLoudness(audioData)
-                         if (loudness > audioThreshold) {
-                             if (thresholdStartTime == 0L) {
-                                 thresholdStartTime = currentTime
-                             }
-                             if (currentTime - thresholdStartTime >= 3000 && currentTime - lastViolationTime >= 3000) {
-                                 registerViolation("Excessive Noise!")
-
-                                 lastViolationTime = currentTime
-                                 thresholdStartTime = 0L
-                             }
-                         } else {
-                             thresholdStartTime = 0L
-                         }
+                         events.tryEmit(loudness)
                      }
                  }
              } finally {
@@ -499,6 +492,18 @@ class DriveViewModel(
                  audioRecord.release()
              }
          }
+
+         events
+             .map { it > audioThreshold }
+             .distinctUntilChanged()
+             .filter { it }
+             .map {}
+             .debounce(debounceThreshold)
+             .collect {
+                 viewModelScope.launch {
+                     registerViolation("Excessive Noise!")
+                 }
+             }
      }
 
     private fun calculateLoudness(audioData: ShortArray): Double {
@@ -509,6 +514,7 @@ class DriveViewModel(
         val rms = sqrt(sum / audioData.size)
         return 20 * log10(rms)
     }
+
     private suspend fun getLocation(): Location? {
         return try {
             locationProvider?.getCurrentLocation {
