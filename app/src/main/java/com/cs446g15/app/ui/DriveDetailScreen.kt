@@ -5,13 +5,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,6 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,10 +57,18 @@ fun DriveDetailScreen(
             topBar = {
                 MediumTopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                        containerColor = Color(red = 68, green = 188, blue = 216)
                     ),
                     title = {
-                        Text("Drive Details")
+                        Text(
+                            text = "Drive Details",
+                            style = TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 32.sp
+                            )
+                        )
                     },
                     navigationIcon = {
                         IconButton(onClick = { exit("") }) {
@@ -85,7 +101,7 @@ fun DriveDetailBody(
         val drive = viewModel.drive
         Text(text = "Duration:",
             style = TextStyle(
-                color = Color.Blue,
+                color = Color(red = 68, green = 188, blue = 216),
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp
             )
@@ -100,12 +116,13 @@ fun DriveDetailBody(
             val time = String.format("%02d:%02d:%02d", hours, minutes, seconds)
             Text(text = time,
                 style = TextStyle(
-                    color = Color.Blue,
+                    color = Color(red = 68, green = 188, blue = 216),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 24.sp
                 )
             )
         }
+        Spacer(modifier = Modifier.height(25.dp))
         Text(text = "Violations:",
             style = TextStyle(
                 color = Color.Red,
@@ -115,11 +132,12 @@ fun DriveDetailBody(
             modifier = Modifier.padding(top = 16.dp)
         )
         drive?.violations?.forEach{ violation ->
+            Spacer(modifier = Modifier.height(10.dp))
             Text(text = violation.description,
                 style = TextStyle(
                     color = Color.Red,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 24.sp
                 )
             )
         }
@@ -131,9 +149,34 @@ fun DriveDetailBody(
         ) {
             ElevatedButton(
                 onClick = onLeaveDetails,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                    contentColor = Color.Black // Text color
+                )
             ) {
-                Text("Back to Home")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                {
+                    Icon(
+                        Icons.Default.Home,
+                        contentDescription = "Home",
+                    )
+                    Text(
+                        text = "Back to Home",
+                        style = TextStyle(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }

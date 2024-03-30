@@ -4,12 +4,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -22,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -47,17 +59,46 @@ fun HistoryScreen(
             topBar = {
                 MediumTopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                        containerColor = Color(red = 68, green = 188, blue = 216)
                     ),
                     title = {
-                        Text("Past Rides")
+                        Text(
+                            text = "Past Rides",
+                            style = TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 32.sp
+                            )
+                        )
                     },
                     actions = {
                         ElevatedButton(
                             onClick = { exportDrivesWithAggregation(viewModel.repository.drives.values.toList())},
-                            modifier = Modifier.padding(horizontal = 12.dp)
+                            modifier = Modifier
+                                .padding(vertical = 20.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = Color.White // Text color
+                            )
                         ) {
-                            Text("Export Data")
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            )
+                            {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = "Send",
+                                )
+                                Text(
+                                    text = "Export Data",
+                                    style = TextStyle(
+                                        fontFamily = FontFamily.SansSerif,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center
+                                    ),
+                                )
+                            }
                         }
                     }
                 )
@@ -89,8 +130,9 @@ fun HistoryScreenBody(
             i += 1
             Text(text = "Drive $i:",
                 style = TextStyle(
-                    color = Color.Blue,
-                    fontSize = 18.sp
+                    color = Color(red = 68, green = 188, blue = 216),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
                 )
             )
             val startTime: LocalDateTime = drive.startTime.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -99,14 +141,16 @@ fun HistoryScreenBody(
 
             Text(text = "Date: " + endTime.date,
                 style = TextStyle(
-                    color = Color.Black,
-                    fontSize = 14.sp
+                    color = Color.DarkGray,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
                 )
             )
             Text(text = startTime.hour.toString().padStart(2, '0') + ":" + startTime.minute.toString().padStart(2, '0') + " to " + endTime.hour.toString().padStart(2, '0') + ":" + endTime.minute.toString().padStart(2, '0'),
                 style = TextStyle(
-                    color = Color.Black,
-                    fontSize = 14.sp
+                    color = Color.DarkGray,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
                 )
             )
             Column(
@@ -119,11 +163,37 @@ fun HistoryScreenBody(
             ) {
                 ElevatedButton(
                     onClick = { onViewDetails(id) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                        contentColor = Color.Black // Text color
+                    )
                 ) {
-                    Text("View Details")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "Info",
+                        )
+                        Text(
+                            text = "View Details",
+                            style = TextStyle(
+                                fontFamily = FontFamily.SansSerif,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
+            Spacer(modifier = Modifier.height(20.dp))
         }
 
         Column(
@@ -136,9 +206,34 @@ fun HistoryScreenBody(
         ) {
             ElevatedButton(
                 onClick = onExit,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+                    contentColor = Color.Black // Text color
+                )
             ) {
-                Text("Back to Home")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                {
+                    Icon(
+                        Icons.Default.Home,
+                        contentDescription = "Home",
+                    )
+                    Text(
+                        text = "Back to Home",
+                        style = TextStyle(
+                            fontFamily = FontFamily.SansSerif,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
