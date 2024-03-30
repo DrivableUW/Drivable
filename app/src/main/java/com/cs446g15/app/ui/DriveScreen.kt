@@ -197,6 +197,7 @@ fun DriveScreen(
 
     Surface {
         Scaffold(
+            containerColor = Color(red = 255, green = 230, blue = 208),
             topBar = {
                 MediumTopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(

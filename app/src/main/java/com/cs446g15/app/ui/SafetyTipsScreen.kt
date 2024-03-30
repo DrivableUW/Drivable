@@ -15,10 +15,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -48,6 +50,7 @@ fun SafetyTipsScreen(
 ) {
     Surface {
         Scaffold(
+            containerColor = Color(red = 255, green = 230, blue = 208),
             topBar = {
                 MediumTopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -63,6 +66,11 @@ fun SafetyTipsScreen(
                                 fontSize = 32.sp
                             )
                         )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { exit() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 )
             }
