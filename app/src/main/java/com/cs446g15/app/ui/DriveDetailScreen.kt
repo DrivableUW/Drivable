@@ -189,7 +189,6 @@ fun DriveDetailBody(
             )
         }
         Spacer(modifier = Modifier.height(25.dp))
-
         Text(text = "Violations:",
             style = TextStyle(
                 color = Color.Red,
