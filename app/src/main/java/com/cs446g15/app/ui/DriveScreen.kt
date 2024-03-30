@@ -11,8 +11,9 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import androidx.activity.compose.BackHandler
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis.COORDINATE_SYSTEM_ORIGINAL
 import androidx.camera.mlkit.vision.MlKitAnalyzer
-import androidx.camera.view.CameraController.COORDINATE_SYSTEM_VIEW_REFERENCED
+import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
@@ -215,18 +216,8 @@ fun DriveBody(
             }
         }
 
-        AndroidView(
-            factory = { context ->
-                PreviewView(context).apply {
-                    // https://stackoverflow.com/a/68293531
-                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                    layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                    setBackgroundColor(android.graphics.Color.BLACK)
-                }
-            },
-            update = { view ->
-                view.controller = viewModel.cameraController
-            },
+        CameraPreview(
+            viewModel.cameraController,
             // Android requires that the camera be visible to receive frames.
             // Ah well, we'll cheese it with a 1x1dp 0% opacity view.
             modifier = Modifier
@@ -236,6 +227,25 @@ fun DriveBody(
     }
 }
 
+@Composable
+fun CameraPreview(
+    cameraController: CameraController?,
+    modifier: Modifier = Modifier
+) {
+    AndroidView(
+        factory = { context ->
+            PreviewView(context).apply {
+                // https://stackoverflow.com/a/68293531
+                controller = cameraController
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            }
+        },
+        update = { it.controller = cameraController },
+        modifier = modifier
+    )
+}
+
 data class UiState(
     val startTime: Instant = Clock.System.now(),
     val startLocation: Location? = null,
@@ -243,8 +253,8 @@ data class UiState(
     val shouldExit: Boolean = false,
     val violations: List<Violation> = emptyList(),
     val showConfirmation: Boolean = false,
-    // used to update the AndroidView
-    val setupCameraController: Boolean = false,
+    // used to update the AndroidView when cameraController is ready
+    val cameraControllerReady: Boolean = false,
 )
 
 class DriveViewModel(
@@ -387,7 +397,7 @@ class DriveViewModel(
             ContextCompat.getMainExecutor(context),
             MlKitAnalyzer(
                 listOf(detector),
-                COORDINATE_SYSTEM_VIEW_REFERENCED,
+                COORDINATE_SYSTEM_ORIGINAL,
                 ContextCompat.getMainExecutor(context)
             ) {
                 events.tryEmit(it)
@@ -395,28 +405,41 @@ class DriveViewModel(
         )
         cameraController.bindToLifecycle(lifecycleOwner)
         this.cameraController = cameraController
-        updateState { copy(setupCameraController = true) }
+        updateState { copy(cameraControllerReady = true) }
 
         events
+            // extract the first face if present
             .mapNotNull {
-                val faces = it.getValue(detector)
-                if (faces.isNullOrEmpty()) null else faces[0]
+                it.getValue(detector)?.firstOrNull()
             }
+            // map to true iff an eye is closed
             .map {
                 val rightOpen = it.rightEyeOpenProbability ?: 0f
                 val leftOpen = it.leftEyeOpenProbability ?: 0f
-                val distracted = rightOpen < eyeThreshold || leftOpen < eyeThreshold
-                if (distracted) Clock.System.now() else null
+                rightOpen < eyeThreshold || leftOpen < eyeThreshold
             }
+            // convert to the current timestamp
+            .map {
+                if (it) Clock.System.now() else null
+            }
+            // obtain the duration for which the eye(s) have been closed
             .scan(null as Pair<Instant, Duration>?) { prev, now ->
                 now?.let { it to (it - (prev?.first ?: it)) }
             }
+            // map to just the duration
             .map { it?.second ?: 0.milliseconds }
+            // map to true iff the duration is over the threshold.
+            // at this point, the stream emits a sequence of `true`
+            // iff the user is currently distracted.
             .map { it > durationThreshold }
+            // as with setupAccelerometer, we only want to trigger
+            // on the leading edge.
             .distinctUntilChanged()
             .filter { it }
             .map {}
             .debounce(debounceTime)
+            // if we get here, it corresponds to a "user has gotten distracted"
+            // event. register a violation.
             .collect {
                 viewModelScope.launch {
                     registerViolation("Distracted driving!")
