@@ -6,6 +6,7 @@ import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Granularity
 import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.tasks.await
 import kotlin.time.Duration
@@ -49,3 +50,5 @@ enum class KtPriority(val raw: Int) {
     LOW_POWER(Priority.PRIORITY_LOW_POWER),
     PASSIVE(Priority.PRIORITY_PASSIVE),
 }
+
+fun Location.latLng(): LatLng = LatLng(latitude, longitude)
