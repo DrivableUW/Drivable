@@ -87,7 +87,8 @@ fun DriveDetailScreen(
                 )
             }
         ) {
-            Box(modifier = Modifier.padding(it)) {
+            Column(modifier = Modifier.padding(it)) {
+                DriveDetailMap(viewModel)
                 DriveDetailBody(viewModel, onLeaveDetails = { exit("home") } )
             }
         }
@@ -95,68 +96,63 @@ fun DriveDetailScreen(
 }
 
 @Composable
-fun DriveDetailBody(
+fun DriveDetailMap(
     viewModel: DriveDetailViewModel,
-    onLeaveDetails: () -> Unit
 ) {
-    Column {
-        val drive = viewModel.drive
+    val drive = viewModel.drive
 
-        if (drive?.startLocation != null && drive.endLocation != null) {
-            val start = drive.startLocation.latLng()
-            val end = drive.endLocation.latLng()
+    if (drive?.startLocation != null && drive.endLocation != null) {
+        val start = drive.startLocation.latLng()
+        val end = drive.endLocation.latLng()
 
-            val cameraPositionState = rememberCameraPositionState {
-                this.position = cameraPosition {
-                    target(start)
-                    zoom(10f)
-                }
-            }
-
-            GoogleMap(
-                modifier = Modifier.height(200.dp),
-                cameraPositionState = cameraPositionState,
-                onMapLoaded = {
-                    val bounds = LatLngBounds.Builder().apply {
-                        include(start)
-                        include(end)
-                        drive.violations
-                            .mapNotNull { it.location }
-                            .forEach { include(it.latLng()) }
-                    }.build()
-                    val update = CameraUpdateFactory.newLatLngBounds(bounds, 200)
-                    cameraPositionState.move(update)
-                }
-            ) {
-                Marker(
-                    state = MarkerState(position = start),
-                    title = "Start",
-                    snippet = "You started here",
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
-                )
-                Marker(
-                    state = MarkerState(position = end),
-                    title = "End",
-                    snippet = "You ended here",
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
-                )
-                for (violation in drive.violations) {
-                    val location = violation.location ?: continue
-                    Marker(
-                        state = MarkerState(position = location.latLng()),
-                        title = "Violation",
-                        snippet = violation.description
-                    )
-                }
+        val cameraPositionState = rememberCameraPositionState {
+            this.position = cameraPosition {
+                target(start)
+                zoom(10f)
             }
         }
 
-        DriveDetailInner(viewModel, onLeaveDetails)
+        GoogleMap(
+            modifier = Modifier.height(200.dp),
+            cameraPositionState = cameraPositionState,
+            onMapLoaded = {
+                val bounds = LatLngBounds.Builder().apply {
+                    include(start)
+                    include(end)
+                    drive.violations
+                        .mapNotNull { it.location }
+                        .forEach { include(it.latLng()) }
+                }.build()
+                val update = CameraUpdateFactory.newLatLngBounds(bounds, 200)
+                cameraPositionState.move(update)
+            }
+        ) {
+            Marker(
+                state = MarkerState(position = start),
+                title = "Start",
+                snippet = "You started here",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
+            )
+            Marker(
+                state = MarkerState(position = end),
+                title = "End",
+                snippet = "You ended here",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
+            )
+            for (violation in drive.violations) {
+                val location = violation.location ?: continue
+                Marker(
+                    state = MarkerState(position = location.latLng()),
+                    title = "Violation",
+                    snippet = violation.description
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun DriveDetailInner(
+fun DriveDetailBody(
     viewModel: DriveDetailViewModel,
     onLeaveDetails: () -> Unit
 ) {
