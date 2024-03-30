@@ -156,6 +156,7 @@ fun DriveDetailBody(
     viewModel: DriveDetailViewModel,
     onLeaveDetails: () -> Unit
 ) {
+
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -164,9 +165,7 @@ fun DriveDetailBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val drive = viewModel.drive
-
-        Text(
-            text = "Duration:",
+        Text(text = "Duration:",
             style = TextStyle(
                 color = Color(red = 68, green = 188, blue = 216),
                 fontWeight = FontWeight.Bold,
@@ -181,8 +180,7 @@ fun DriveDetailBody(
             val seconds = (duration.inWholeSeconds % 60)
 
             val time = String.format("%02d:%02d:%02d", hours, minutes, seconds)
-            Text(
-                text = time,
+            Text(text = time,
                 style = TextStyle(
                     color = Color(red = 68, green = 188, blue = 216),
                     fontWeight = FontWeight.Bold,
@@ -192,8 +190,7 @@ fun DriveDetailBody(
         }
         Spacer(modifier = Modifier.height(25.dp))
 
-        Text(
-            text = "Violations:",
+        Text(text = "Violations:",
             style = TextStyle(
                 color = Color.Red,
                 fontWeight = FontWeight.Bold,
@@ -201,10 +198,9 @@ fun DriveDetailBody(
             ),
             modifier = Modifier.padding(top = 16.dp)
         )
-        drive?.violations?.forEach { violation ->
+        drive?.violations?.forEach{ violation ->
             Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = violation.description,
+            Text(text = violation.description,
                 style = TextStyle(
                     color = Color.Red,
                     fontWeight = FontWeight.Bold,
@@ -214,9 +210,7 @@ fun DriveDetailBody(
         }
         Column(
             // IntrinsicSize allows the elements to have equal size
-            modifier = Modifier
-                .width(IntrinsicSize.Max)
-                .padding(top = 10.dp),
+            modifier = Modifier.width(IntrinsicSize.Max).padding(top = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
@@ -227,11 +221,7 @@ fun DriveDetailBody(
                     .padding(vertical = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(
-                        red = 68,
-                        green = 188,
-                        blue = 216
-                    ), // Background color of the button
+                    containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
                     contentColor = Color.Black // Text color
                 )
             ) {
