@@ -42,11 +42,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cs446g15.app.data.DrivesRepository
 import com.cs446g15.app.util.exportDrivesWithAggregation
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -85,7 +87,7 @@ fun HistoryScreen(
                     },
                     actions = {
                         ElevatedButton(
-                            onClick = { exportDrivesWithAggregation(viewModel.repository.drives.values.toList())},
+                            onClick = { viewModel.export() },
                             modifier = Modifier
                                 .padding(vertical = 20.dp),
                             shape = RoundedCornerShape(8.dp),
@@ -285,6 +287,12 @@ class HistoryScreenViewModel(
             initializer {
                 HistoryScreenViewModel()
             }
+        }
+    }
+
+    fun export() {
+        viewModelScope.launch {
+            exportDrivesWithAggregation(repository.drives.values.toList())
         }
     }
 }

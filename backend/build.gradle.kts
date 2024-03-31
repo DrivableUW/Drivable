@@ -21,6 +21,11 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation("com.google.apis:google-api-services-playintegrity:v1-rev20240317-2.0.0")
+    implementation("com.google.auth:google-auth-library-credentials:1.10.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.10.0")
+    implementation("com.auth0:java-jwt:4.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
