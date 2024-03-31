@@ -404,8 +404,8 @@ class DriveViewModel(
         try {
             val locationProvider = LocationServices.getFusedLocationProviderClient(context)
             this.locationProvider = locationProvider
-            val loc = getLocation()
-            updateState { copy(startLocation = loc) }
+            val location = getLocation()
+            updateState { copy(startLocation = location) }
         } catch (e: SecurityException) {
             Log.w("DriveViewModel", "location fetch failed: $e")
         }
