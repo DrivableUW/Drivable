@@ -369,13 +369,11 @@ class DriveViewModel(
             return
         }
 
-        distractionDetector.lifecycleOwner = lifecycleOwner
-
         viewModelScope.launch {
             awaitAll(
                 async { setupTts(context) },
                 async { setupLocation(context) },
-                async { setupDetectors() },
+                async { setupDetectors(lifecycleOwner) },
             )
         }
     }
@@ -401,13 +399,12 @@ class DriveViewModel(
         }
     }
 
-    private suspend fun setupDetectors() {
+    private suspend fun setupDetectors(lifecycleOwner: LifecycleOwner) {
         listOf(
-            AccelerationDetector,
-            NoiseDetector,
-            distractionDetector,
+            AccelerationDetector.launch(Unit),
+            NoiseDetector.launch(Unit),
+            distractionDetector.launch(DistractionDetector.Request(lifecycleOwner)),
         )
-            .map { it.launch() }
             .merge()
             .collect {
                 // launch a new coroutine to avoid blocking the flows

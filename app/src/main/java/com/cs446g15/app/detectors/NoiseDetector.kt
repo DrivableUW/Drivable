@@ -20,10 +20,10 @@ import kotlin.math.log10
 import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.seconds
 
-object NoiseDetector : Detector {
+object NoiseDetector : Detector<Unit> {
     @SuppressLint("MissingPermission")
     @OptIn(FlowPreview::class)
-    override fun launch(): Flow<String> {
+    override fun launch(request: Unit): Flow<String> {
         val sampleRate = 44100
         val audioSource = MediaRecorder.AudioSource.MIC
         val channelConfig = AudioFormat.CHANNEL_IN_MONO

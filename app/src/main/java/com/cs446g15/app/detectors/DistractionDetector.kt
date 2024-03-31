@@ -26,17 +26,13 @@ import kotlinx.datetime.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-class DistractionDetector : Detector {
-    val camera = MutableStateFlow<CameraController?>(null)
-    var lifecycleOwner: LifecycleOwner? = null
+class DistractionDetector : Detector<DistractionDetector.Request> {
+    data class Request(val lifecycleOwner: LifecycleOwner)
 
-    /**
-     * precondition: `lifecycleOwner` must be set before calling `run()`.
-     *
-     * Android also requires that you use camera in a `PreviewView`.
-     */
+    val camera = MutableStateFlow<CameraController?>(null)
+
     @OptIn(FlowPreview::class)
-    override fun launch(): Flow<String> {
+    override fun launch(request: Request): Flow<String> {
         // the eyeOpenProbability at which we consider the eye "closed"
         val eyeThreshold = 0.5
         // the amount of time for which the eye(s) must be closed to trigger a violation
@@ -68,7 +64,7 @@ class DistractionDetector : Detector {
                 events.tryEmit(it)
             }
         )
-        cameraController.bindToLifecycle(lifecycleOwner!!)
+        cameraController.bindToLifecycle(request.lifecycleOwner)
         this.camera.value = cameraController
 
         return events

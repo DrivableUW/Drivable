@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlin.time.Duration.Companion.milliseconds
 
-object AccelerationDetector : Detector {
+object AccelerationDetector : Detector<Unit> {
     @OptIn(FlowPreview::class)
-    override fun launch(): Flow<String> {
+    override fun launch(request: Unit): Flow<String> {
         val threshold = 3 // G force threshold
         val debounceTime = 1000.milliseconds
 
