@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cs446g15.app.data.AggregateDriveData
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -95,16 +96,7 @@ fun SafetyTipsBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val allDrives = viewModel.repository.drives
-        val violationsMap = mutableMapOf<String, Int>()
-        for ((_, drive) in allDrives) {
-            drive.violations.forEach{ violation ->
-                if (violationsMap.containsKey(violation.description)) {
-                    violationsMap[violation.description] = (violationsMap[violation.description] as Int) + 1
-                } else {
-                    violationsMap[violation.description] = 1
-                }
-            }
-        }
+        val violationsMap = AggregateDriveData.computeViolationCounts(allDrives.values.toList())
 
         var worstViolation = ""
         var worstViolationCount = 0
