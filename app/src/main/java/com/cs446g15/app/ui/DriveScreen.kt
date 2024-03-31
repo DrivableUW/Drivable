@@ -91,7 +91,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import kotlinx.coroutines.FlowPreview
@@ -435,7 +434,7 @@ class DriveViewModel(
         override fun onLocationResult(locationResult: LocationResult) {
             locationResult.lastLocation?.let { location ->
                 val speed = location.speedAccuracyMetersPerSecond.times(3.6)// Speed converted to km/h
-                if (speed > 0.0) {
+                if (speed > 60.0) {
                     viewModelScope.launch {
                         registerViolation("Speeding!")
                     }
@@ -452,10 +451,9 @@ class DriveViewModel(
             updateState { copy(startLocation = loc) }
 
             val locationRequest = LocationRequest.Builder(10000L)
+                .setMinUpdateDistanceMeters(2F)
                 .build()
 
-            //locationProvider.requestLocationUpdates(locationProvider?.getCurrentLocation
-            // { priority = KtPriority.HIGH_ACCURACY }, locationCallback, Looper.getMainLooper())
             locationProvider.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
         } catch (e: SecurityException) {
             Log.w("DriveViewModel", "location fetch failed: $e")
