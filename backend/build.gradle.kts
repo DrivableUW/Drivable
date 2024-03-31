@@ -1,7 +1,3 @@
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
-
 plugins {
     kotlin("jvm")
     id("io.ktor.plugin")
@@ -20,7 +16,7 @@ application {
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation("ch.qos.logback:logback-classic:1.4.14")
     implementation("com.google.apis:google-api-services-playintegrity:v1-rev20240317-2.0.0")
     implementation("com.google.auth:google-auth-library-credentials:1.10.0")
     implementation("com.google.auth:google-auth-library-oauth2-http:1.10.0")
@@ -29,5 +25,5 @@ dependencies {
     implementation("org.bouncycastle:bcpkix-jdk15on:1.68")
     implementation(project(":common"))
     testImplementation("io.ktor:ktor-server-tests-jvm")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
