@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.application") version "8.3.1"
-    id("org.jetbrains.kotlin.android") version "1.9.0"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.20"
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -80,6 +80,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("io.ktor:ktor-client-core:2.3.9")
     implementation("io.ktor:ktor-client-cio:2.3.9")
+    implementation(project(":common"))
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

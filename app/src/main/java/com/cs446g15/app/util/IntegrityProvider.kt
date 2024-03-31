@@ -1,4 +1,5 @@
 import com.cs446g15.app.MainActivity
+import com.cs446g15.common.sha256
 import com.google.android.play.core.integrity.IntegrityManagerFactory
 import com.google.android.play.core.integrity.StandardIntegrityManager
 import com.google.android.play.core.integrity.StandardIntegrityManager.StandardIntegrityTokenRequest
@@ -6,16 +7,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
-import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.URLProtocol
 import io.ktor.http.Url
-import io.ktor.http.path
 import kotlinx.coroutines.tasks.await
-import kotlinx.serialization.json.Json
-import java.security.MessageDigest
 
 object IntegrityProvider {
     private val _provider by lazy {
@@ -53,8 +49,3 @@ object IntegrityProvider {
         return result.bodyAsText()
     }
 }
-
-private fun String.sha256()
-    = MessageDigest.getInstance("SHA-256")
-        .digest(toByteArray())
-        .joinToString("") { "%02x".format(it) }

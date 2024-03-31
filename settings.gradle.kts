@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 rootProject.name = "CS446"
 include(":app")
 include(":backend")
+include(":common")

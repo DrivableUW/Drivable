@@ -2,6 +2,7 @@ package com.cs446g15.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.cs446g15.common.sha256
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.playintegrity.v1.PlayIntegrity
@@ -126,8 +127,3 @@ fun getPublicKeyPEMFromECPrivateKey(privateKey: ECPrivateKey): String {
         it.toString()
     }
 }
-
-private fun String.sha256()
-        = MessageDigest.getInstance("SHA-256")
-    .digest(toByteArray())
-    .joinToString("") { "%02x".format(it) }

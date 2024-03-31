@@ -3,8 +3,8 @@ val kotlin_version: String by project
 val logback_version: String by project
 
 plugins {
-    kotlin("jvm") version "1.9.23"
-    id("io.ktor.plugin") version "2.3.9"
+    kotlin("jvm")
+    id("io.ktor.plugin")
 }
 
 group = "com.cs446g15"
@@ -27,6 +27,7 @@ dependencies {
     implementation("com.auth0:java-jwt:4.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("org.bouncycastle:bcpkix-jdk15on:1.68")
+    implementation(project(":common"))
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
