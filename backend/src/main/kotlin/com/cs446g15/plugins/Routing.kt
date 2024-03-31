@@ -40,6 +40,9 @@ fun Application.configureRouting() {
     val keyFile = (res / "key.p8").toFile()
     val googleFile = (res / "google.json").toFile()
     if (!googleFile.exists()) {
+        // see:
+        // https://developer.android.com/google/play/integrity/setup#use_google_cloud_console
+        // https://developer.android.com/google/play/integrity/standard#decrypt-and
         throw IllegalStateException(
             "Please get google.json from Google Cloud Console credentials"
         )
