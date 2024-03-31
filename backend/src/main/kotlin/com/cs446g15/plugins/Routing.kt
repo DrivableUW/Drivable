@@ -25,7 +25,6 @@ import kotlinx.serialization.json.Json
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter
-import java.io.File
 import java.io.StringWriter
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
@@ -38,16 +37,22 @@ import kotlin.io.path.div
 
 fun Application.configureRouting() {
     val res = Path("backend/src/main/resources")
-    val file = (res / "key.p8").toFile()
-    if (!file.exists()) {
+    val keyFile = (res / "key.p8").toFile()
+    val googleFile = (res / "google.json").toFile()
+    if (!googleFile.exists()) {
+        throw IllegalStateException(
+            "Please get google.json from Google Cloud Console credentials"
+        )
+    }
+    if (!keyFile.exists()) {
         KeyPairGenerator.getInstance("EC")
             .apply { initialize(256) }
             .generateKeyPair()
             .private
             .encoded
-            .also { file.writeBytes(it) }
+            .also { keyFile.writeBytes(it) }
     }
-    val der = file.readBytes()
+    val der = keyFile.readBytes()
     val key = PKCS8EncodedKeySpec(der)
     val ecPrivateKey = KeyFactory.getInstance("EC").generatePrivate(key)
     val issuer = "com.cs446g15.backend"
@@ -57,9 +62,7 @@ fun Application.configureRouting() {
     val playIntegrity = PlayIntegrity.Builder(
         GoogleNetHttpTransport.newTrustedTransport(),
         GsonFactory.getDefaultInstance(),
-        HttpCredentialsAdapter(GoogleCredentials.fromStream(
-            (res / "google.json").toFile().inputStream()
-        )),
+        HttpCredentialsAdapter(GoogleCredentials.fromStream(googleFile.inputStream())),
     ).apply {
         applicationName = "com.cs446g15.backend"
         googleClientRequestInitializer = PlayIntegrityRequestInitializer()
