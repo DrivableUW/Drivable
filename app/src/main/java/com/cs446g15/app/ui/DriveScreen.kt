@@ -3,20 +3,21 @@ package com.cs446g15.app.ui
 import android.Manifest.permission
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Context.LOCATION_SERVICE
-import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.location.Location
-import android.location.LocationManager
+import com.google.android.gms.location.LocationRequest
+import android.os.Build
+import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis.COORDINATE_SYSTEM_ORIGINAL
 import androidx.camera.mlkit.vision.MlKitAnalyzer
@@ -87,7 +88,10 @@ import com.cs446g15.app.util.getTextToSpeech
 import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import kotlinx.coroutines.FlowPreview
@@ -117,6 +121,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.math.log10
 import kotlin.math.sqrt
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun DriveScreen(
     viewModel: DriveViewModel = viewModel(),
@@ -394,6 +399,7 @@ class DriveViewModel(
         _uiFlow.value = _uiFlow.value.update()
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     fun handlePermissions(
         permissions: MultiplePermissionsState,
         context: Context,
@@ -425,6 +431,19 @@ class DriveViewModel(
         }
     }
 
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            locationResult.lastLocation?.let { location ->
+                val speed = location.speedAccuracyMetersPerSecond.times(3.6)// Speed converted to km/h
+                if (speed > 0.0) {
+                    viewModelScope.launch {
+                        registerViolation("Speeding!")
+                    }
+                }
+            }
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.S)
     private suspend fun setupLocation(context: Context) {
         try {
             val locationProvider = LocationServices.getFusedLocationProviderClient(context)
@@ -432,34 +451,12 @@ class DriveViewModel(
             val loc = getLocation()
             updateState { copy(startLocation = loc) }
 
-            val gpsLocationClient: LocationManager = context.getSystemService(LOCATION_SERVICE) as LocationManager
-            val locationListener = android.location.LocationListener { location -> //handle location change
-                val speed = location.speed.times(3.6)// Speed converted to km/h
-                if (speed > 1250.0) {
-                    viewModelScope.launch {
-                        registerViolation("Speeding!")
-                    }
-                }
-            }
+            val locationRequest = LocationRequest.Builder(10000L)
+                .build()
 
-            fun setupListener(){
-                if (ActivityCompat.checkSelfPermission(
-                        context,
-                        permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        context,
-                        permission.ACCESS_COARSE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) { return }
-                gpsLocationClient.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    0L ,
-                    0f ,
-                    locationListener
-                )
-            }
-
-            setupListener()
+            //locationProvider.requestLocationUpdates(locationProvider?.getCurrentLocation
+            // { priority = KtPriority.HIGH_ACCURACY }, locationCallback, Looper.getMainLooper())
+            locationProvider.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
         } catch (e: SecurityException) {
             Log.w("DriveViewModel", "location fetch failed: $e")
         }
@@ -699,6 +696,7 @@ class DriveViewModel(
             repository.addDrive(drive)
             exit(drive.id)
         }
+        locationProvider?.removeLocationUpdates(locationCallback)
     }
 
     fun backRequested() {
