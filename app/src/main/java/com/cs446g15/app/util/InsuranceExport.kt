@@ -1,5 +1,6 @@
 package com.cs446g15.app.util
 
+import IntegrityProvider
 import android.content.Intent
 import androidx.core.content.FileProvider
 import com.cs446g15.app.MainActivity
@@ -17,7 +18,7 @@ data class ExportedDriveData(
     val aggregatedData: AggregatedDriveData
 )
 
-fun exportDrivesWithAggregation(drives: List<Drive>) {
+suspend fun exportDrivesWithAggregation(drives: List<Drive>) {
     val json = Json { prettyPrint = true }
 
     val aggregatedData = aggregateDriveData(drives)
@@ -26,15 +27,17 @@ fun exportDrivesWithAggregation(drives: List<Drive>) {
 
     val jsonExportedData = json.encodeToString(ExportedDriveData.serializer(), exportedData)
 
-    val fileName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + "_drive_export"
+    val attested = IntegrityProvider.attest(jsonExportedData)
+
+    val fileName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + "_drive_export.jwt"
     val file = File(MainActivity.appContext.cacheDir, fileName)
-    file.writeText(jsonExportedData)
+    file.writeText(attested)
 
     val uri = FileProvider.getUriForFile(MainActivity.appContext, "com.cs446g15.app.fileprovider", file)
 
     val shareIntent = Intent().apply {
         action = Intent.ACTION_SEND
-        type = "application/json"
+        type = "application/jwt"
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
