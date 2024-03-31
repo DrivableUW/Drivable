@@ -75,6 +75,7 @@ import com.cs446g15.app.data.Violation
 import com.cs446g15.app.detectors.AccelerationDetector
 import com.cs446g15.app.detectors.DistractionDetector
 import com.cs446g15.app.detectors.NoiseDetector
+import com.cs446g15.app.detectors.SpeedingDetector
 import com.cs446g15.app.util.KtPriority
 import com.cs446g15.app.util.getCurrentLocation
 import com.cs446g15.app.util.getTextToSpeech
@@ -96,7 +97,6 @@ import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
-@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun DriveScreen(
     viewModel: DriveViewModel = viewModel(),
@@ -371,7 +371,6 @@ class DriveViewModel(
         _uiFlow.value = _uiFlow.value.update()
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
     fun handlePermissions(
         permissions: MultiplePermissionsState,
         context: Context,
@@ -383,9 +382,9 @@ class DriveViewModel(
         }
 
         viewModelScope.launch {
+            setupLocation(context)
             awaitAll(
                 async { setupTts(context) },
-                async { setupLocation(context) },
                 async { setupDetectors(lifecycleOwner) },
             )
         }
@@ -401,31 +400,12 @@ class DriveViewModel(
         }
     }
 
-    private val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            locationResult.lastLocation?.let { location ->
-                val speed = location.speedAccuracyMetersPerSecond.times(3.6)// Speed converted to km/h
-                if (speed > 60.0) {
-                    viewModelScope.launch {
-                        registerViolation("Speeding!")
-                    }
-                }
-            }
-        }
-    }
-    @RequiresApi(Build.VERSION_CODES.S)
     private suspend fun setupLocation(context: Context) {
         try {
             val locationProvider = LocationServices.getFusedLocationProviderClient(context)
             this.locationProvider = locationProvider
             val loc = getLocation()
             updateState { copy(startLocation = loc) }
-
-            val locationRequest = LocationRequest.Builder(10000L)
-                .setMinUpdateDistanceMeters(2F)
-                .build()
-
-            locationProvider.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
         } catch (e: SecurityException) {
             Log.w("DriveViewModel", "location fetch failed: $e")
         }
@@ -436,6 +416,7 @@ class DriveViewModel(
             AccelerationDetector.launch(Unit),
             NoiseDetector.launch(Unit),
             distractionDetector.launch(DistractionDetector.Request(lifecycleOwner)),
+            SpeedingDetector.launch(SpeedingDetector.Request(locationProvider!!)),
         )
             .merge()
             .collect {
@@ -494,7 +475,6 @@ class DriveViewModel(
             repository.addDrive(drive)
             exit(drive.id)
         }
-        locationProvider?.removeLocationUpdates(locationCallback)
     }
 
     fun backRequested() {
