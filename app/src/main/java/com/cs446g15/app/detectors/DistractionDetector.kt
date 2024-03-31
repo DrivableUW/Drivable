@@ -29,6 +29,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class DistractionDetector : Detector<DistractionDetector.Request> {
     data class Request(val lifecycleOwner: LifecycleOwner)
 
+    // NB: Android requires that you use this camera in a `PreviewView`.
     val camera = MutableStateFlow<CameraController?>(null)
 
     @OptIn(FlowPreview::class)
