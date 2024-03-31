@@ -33,7 +33,6 @@ import java.security.MessageDigest
 import java.security.Security
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
-import javax.crypto.KeyGenerator
 
 fun Application.configureRouting() {
     val file = File("backend/src/main/resources/key.p8")
