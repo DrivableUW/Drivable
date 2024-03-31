@@ -614,12 +614,11 @@ class DriveViewModel(
         while (uiFlow.value.endTime == null) {
             val location = getLocation()
             // Get the user's speed
-            val speed = location?.speed ?: 0.0 // Speed in meters/second
-            val speedInKmh = speed * 3.6 // Convert to km/h
+            val speed = location?.speed?.times(3.6) ?:1.0// Speed converted to km/h
             // Check if the user is speeding
-            if (speedInKmh > 60.0) {
+            if (speed > 60.0) {
                 viewModelScope.launch {
-                    registerViolation("Excessive Noise!")
+                    registerViolation("Speeding!")
                 }
             }
         }
