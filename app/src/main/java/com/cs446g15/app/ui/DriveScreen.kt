@@ -3,18 +3,11 @@ package com.cs446g15.app.ui
 import android.Manifest.permission
 import android.content.Context
 import android.location.Location
-import com.google.android.gms.location.LocationRequest
-import android.os.Build
-import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis.COORDINATE_SYSTEM_ORIGINAL
-import androidx.camera.mlkit.vision.MlKitAnalyzer
 import androidx.camera.view.CameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
@@ -63,8 +56,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -82,8 +73,6 @@ import com.cs446g15.app.util.getTextToSpeech
 import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
