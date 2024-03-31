@@ -3,12 +3,15 @@ package com.cs446g15.app.ui
 import android.Manifest.permission
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Context.LOCATION_SERVICE
+import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.location.Location
+import android.location.LocationManager
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -68,6 +71,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
@@ -406,8 +410,7 @@ class DriveViewModel(
                 async { setupLocation(context) },
                 async { setupAccelerometer(context) },
                 async { setupAudioDetection() },
-                async { setupCamera(context, lifecycleOwner) },
-                async { setupSpeedDetection() },
+                async { setupCamera(context, lifecycleOwner) }
             )
         }
     }
@@ -426,8 +429,37 @@ class DriveViewModel(
         try {
             val locationProvider = LocationServices.getFusedLocationProviderClient(context)
             this.locationProvider = locationProvider
-            val location = getLocation()
-            updateState { copy(startLocation = location) }
+            val loc = getLocation()
+            updateState { copy(startLocation = loc) }
+
+            val gpsLocationClient: LocationManager = context.getSystemService(LOCATION_SERVICE) as LocationManager
+            val locationListener = android.location.LocationListener { location -> //handle location change
+                val speed = location.speed.times(3.6)// Speed converted to km/h
+                if (speed > 1250.0) {
+                    viewModelScope.launch {
+                        registerViolation("Speeding!")
+                    }
+                }
+            }
+
+            fun setupListener(){
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        context,
+                        permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) { return }
+                gpsLocationClient.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    0L ,
+                    0f ,
+                    locationListener
+                )
+            }
+
+            setupListener()
         } catch (e: SecurityException) {
             Log.w("DriveViewModel", "location fetch failed: $e")
         }
@@ -609,20 +641,6 @@ class DriveViewModel(
                  }
              }
      }
-
-    private suspend fun setupSpeedDetection() {
-        while (uiFlow.value.endTime == null) {
-            val location = getLocation()
-            // Get the user's speed
-            val speed = location?.speed?.times(3.6) ?:1.0// Speed converted to km/h
-            // Check if the user is speeding
-            if (speed > 60.0) {
-                viewModelScope.launch {
-                    registerViolation("Speeding!")
-                }
-            }
-        }
-    }
 
     private fun calculateLoudness(audioData: ShortArray): Double {
         var sum = 0.0
