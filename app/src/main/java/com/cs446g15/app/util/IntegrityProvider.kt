@@ -43,6 +43,7 @@ object IntegrityProvider {
             setRequestHash(json.sha256())
         }
         val result = httpClient.post {
+            // 10.0.2.2 refers to localhost from the Android emulator
             url(Url("http://10.0.2.2:8081/sign"))
             headers {
                 append("integrity-token", token)
