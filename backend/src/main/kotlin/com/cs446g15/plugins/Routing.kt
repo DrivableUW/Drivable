@@ -33,9 +33,12 @@ import java.security.MessageDigest
 import java.security.Security
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
+import kotlin.io.path.Path
+import kotlin.io.path.div
 
 fun Application.configureRouting() {
-    val file = File("backend/src/main/resources/key.p8")
+    val res = Path("backend/src/main/resources")
+    val file = (res / "key.p8").toFile()
     if (!file.exists()) {
         KeyPairGenerator.getInstance("EC")
             .apply { initialize(256) }
@@ -55,7 +58,7 @@ fun Application.configureRouting() {
         GoogleNetHttpTransport.newTrustedTransport(),
         GsonFactory.getDefaultInstance(),
         HttpCredentialsAdapter(GoogleCredentials.fromStream(
-            File("backend/src/main/resources/google.json").inputStream()
+            (res / "google.json").toFile().inputStream()
         )),
     ).apply {
         applicationName = "com.cs446g15.backend"
