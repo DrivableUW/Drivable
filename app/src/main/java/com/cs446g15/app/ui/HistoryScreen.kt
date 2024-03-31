@@ -47,7 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.cs446g15.app.data.DrivesRepository
-import com.cs446g15.app.util.exportDrivesWithAggregation
+import com.cs446g15.app.util.InsuranceExport
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -292,7 +292,7 @@ class HistoryScreenViewModel(
 
     fun export() {
         viewModelScope.launch {
-            exportDrivesWithAggregation(repository.drives.values.toList())
+            InsuranceExport.exportDrivesWithAggregation(repository.drives.values.toList())
         }
     }
 }
