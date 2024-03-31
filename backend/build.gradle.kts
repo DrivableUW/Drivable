@@ -26,6 +26,7 @@ dependencies {
     implementation("com.google.auth:google-auth-library-oauth2-http:1.10.0")
     implementation("com.auth0:java-jwt:4.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.68")
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
