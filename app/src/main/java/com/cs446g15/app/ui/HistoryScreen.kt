@@ -26,7 +26,7 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -65,7 +65,7 @@ fun HistoryScreen(
         Scaffold(
             containerColor = Color(red = 255, green = 230, blue = 208),
             topBar = {
-                MediumTopAppBar(
+                TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color(red = 68, green = 188, blue = 216)
                     ),

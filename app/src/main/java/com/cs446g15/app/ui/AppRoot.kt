@@ -19,7 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -160,7 +160,7 @@ fun HomeScreen(
     Scaffold(
         containerColor = Color(red = 255, green = 230, blue = 208),
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(red = 68, green = 188, blue = 216)
                 ),
@@ -172,7 +172,8 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
                             fontSize = 32.sp
-                        )
+                        ),
+                        modifier = Modifier.fillMaxWidth().padding(end = 10.dp)
                     )
                 }
             )
