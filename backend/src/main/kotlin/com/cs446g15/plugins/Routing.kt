@@ -29,17 +29,18 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter
 import java.io.StringWriter
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
-import java.security.MessageDigest
 import java.security.Security
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import kotlin.io.path.Path
-import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.inputStream
+import kotlin.io.path.readBytes
+import kotlin.io.path.writeBytes
 
 fun Application.configureRouting() {
-    val res = Path("backend/src/main/resources")
-    val keyFile = (res / "key.p8").toFile()
-    val googleFile = (res / "google.json").toFile()
+    val keyFile = Path("secrets/key.p8")
+    val googleFile = Path("secrets/google.json")
     if (!googleFile.exists()) {
         // see:
         // https://developer.android.com/google/play/integrity/setup#use_google_cloud_console
