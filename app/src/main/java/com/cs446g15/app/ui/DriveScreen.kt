@@ -32,7 +32,7 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -172,7 +172,7 @@ fun DriveScreen(
         Scaffold(
             containerColor = Color(red = 255, green = 230, blue = 208),
             topBar = {
-                MediumTopAppBar(
+                TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color(red = 68, green = 188, blue = 216)
                     ),
@@ -261,34 +261,34 @@ fun DriveBody(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        ElevatedButton(
-            onClick = { viewModel.simulateViolation() },
-            modifier = Modifier
-                .padding(vertical = 8.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
-                contentColor = Color.Black // Text color
-            )
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            )
-            {
-                Icon(
-                    Icons.Default.Create,
-                    contentDescription = "Create",
-                )
-                Text(
-                    text = "Simulate Violation",
-                    style = TextStyle(
-                        fontFamily = FontFamily.SansSerif,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    ),
-                )
-            }
-        }
+//        ElevatedButton(
+//            onClick = { viewModel.simulateViolation() },
+//            modifier = Modifier
+//                .padding(vertical = 8.dp),
+//            shape = RoundedCornerShape(8.dp),
+//            colors = ButtonDefaults.buttonColors(
+//                containerColor = Color(red = 68, green = 188, blue = 216), // Background color of the button
+//                contentColor = Color.Black // Text color
+//            )
+//        ) {
+//            Row(
+//                verticalAlignment = Alignment.CenterVertically,
+//            )
+//            {
+//                Icon(
+//                    Icons.Default.Create,
+//                    contentDescription = "Create",
+//                )
+//                Text(
+//                    text = "Simulate Violation",
+//                    style = TextStyle(
+//                        fontFamily = FontFamily.SansSerif,
+//                        fontWeight = FontWeight.Bold,
+//                        textAlign = TextAlign.Center
+//                    ),
+//                )
+//            }
+//        }
         uiState.violations.forEach { violation ->
             if (Clock.System.now().epochSeconds - violation.time.epochSeconds <= 5) { // Assuming this is your condition function
                 Text(text = violation.description,

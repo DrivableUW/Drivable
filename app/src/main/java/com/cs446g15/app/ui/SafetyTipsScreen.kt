@@ -22,7 +22,7 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,7 +53,7 @@ fun SafetyTipsScreen(
         Scaffold(
             containerColor = Color(red = 255, green = 230, blue = 208),
             topBar = {
-                MediumTopAppBar(
+                TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color(red = 68, green = 188, blue = 216)
                     ),
@@ -91,7 +91,7 @@ fun SafetyTipsBody(
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
-            .padding(top = 32.dp)
+            .padding(top = 32.dp, start = 50.dp, end = 50.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -136,27 +136,31 @@ fun SafetyTipsBody(
                 style = TextStyle(
                     color = Color.Red,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
                 )
             )
+            Spacer(modifier = Modifier.height(10.dp))
             val safetySuggestion = mapOf(
                 ("Speeding!" to "Speed down and obey the speed limit!"),
                 ("Reckless maneuvering!" to "Keep the car stable and avoid jerky movements!"),
                 ("Red light!" to "Make sure to always stop for red lights!"),
-                ("Stop Sign!" to "Always come to a full stop at each stop sign!")
+                ("Stop Sign!" to "Always come to a full stop at each stop sign!"),
+                ("Excessive Noise!" to "Reduce distractions and maintain a calm driving environment!")
             )
             Text(text = safetySuggestion[worstViolation].orEmpty(),
                 style = TextStyle(
                     color = Color.Red,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
                 )
             )
 
             Spacer(modifier = Modifier.height(60.dp))
             Text(text = "Counts of All Your Violations:",
                 style = TextStyle(
-                    color = Color(red = 68, green = 188, blue = 216),
+                    color = Color(red = 48, green = 168, blue = 196),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
@@ -175,7 +179,7 @@ fun SafetyTipsBody(
             Spacer(modifier = Modifier.height(60.dp))
             Text(text = "Please use this information to improve your driving behaviour in the future!",
                 style = TextStyle(
-                    color = Color(red = 68, green = 188, blue = 216),
+                    color = Color(red = 48, green = 168, blue = 196),
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     fontSize = 18.sp
