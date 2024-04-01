@@ -50,7 +50,7 @@ fun AppRoot() {
     CS446Theme {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background,
+            color = Color(red = 255, green = 230, blue = 208),
         ) {
             NavRoot()
         }
