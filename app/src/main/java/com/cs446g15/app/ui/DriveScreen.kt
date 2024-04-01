@@ -66,6 +66,7 @@ import com.cs446g15.app.data.Violation
 import com.cs446g15.app.detectors.AccelerationDetector
 import com.cs446g15.app.detectors.DistractionDetector
 import com.cs446g15.app.detectors.NoiseDetector
+import com.cs446g15.app.detectors.SpeedingDetector
 import com.cs446g15.app.util.KtPriority
 import com.cs446g15.app.util.getCurrentLocation
 import com.cs446g15.app.util.getTextToSpeech
@@ -370,9 +371,9 @@ class DriveViewModel(
         }
 
         viewModelScope.launch {
+            setupLocation(context)
             awaitAll(
                 async { setupTts(context) },
-                async { setupLocation(context) },
                 async { setupDetectors(lifecycleOwner) },
             )
         }
@@ -404,6 +405,7 @@ class DriveViewModel(
             AccelerationDetector.launch(Unit),
             NoiseDetector.launch(Unit),
             distractionDetector.launch(DistractionDetector.Request(lifecycleOwner)),
+            SpeedingDetector.launch(SpeedingDetector.Request(locationProvider!!)),
         )
             .merge()
             .collect {
